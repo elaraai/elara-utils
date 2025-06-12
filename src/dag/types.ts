@@ -285,3 +285,16 @@ export const GraphValidateResult = StructType({
     duplicate_nodes: ArrayType(GraphDuplicateNode),
     duplicate_edges: ArrayType(GraphDuplicateEdge),
 });
+
+// Path subgraph for source/target extraction algorithms
+export const PathSubgraph = StructType({
+    nodes: ArrayType(GraphNode),
+    edges: ArrayType(GraphEdge),
+    source_nodes: ArrayType(GraphNode),
+    target_nodes: ArrayType(GraphNode)
+});
+
+// Path subgraphs result
+export const PathSubgraphsResult = StructType({
+    subgraphs: ArrayType(PathSubgraph)
+});

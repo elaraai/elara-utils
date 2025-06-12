@@ -1,6 +1,7 @@
 import { Procedure } from "@elaraai/core";
 import {
   Add,
+  And,
   Const,
   Duration,
   Equal,
@@ -16,9 +17,10 @@ import {
   Size,
   Struct,
   Subtract,
+  ToArray,
 } from "@elaraai/core";
 
-import { ArrayType, FloatType, IntegerType, Nullable, StringType, StructType } from "@elaraai/core";
+import { ArrayType, FloatType, IntegerType, Nullable, SetType, StringType, StructType } from "@elaraai/core";
 
 import { graph_build_adjacency_lists } from "./shared_utils";
 import {
@@ -30,6 +32,8 @@ import {
   GraphPathNode,
   GraphShortestPathResult,
   GraphCriticalPathResult,
+  PathSubgraph,
+  PathSubgraphsResult,
 } from "./types";
 
 /**
@@ -635,3 +639,344 @@ export const graph_critical_path = new Procedure("graph_critical_path")
       total_duration: projectEndTime
     }));
   });
+
+/**
+ * Extract all subgraphs that contain paths leading to specified target node types.
+ * Uses backward traversal to ensure complete coverage of all possible routes to targets.
+ * 
+ * **Algorithm**: For each target node, performs backward DFS traversal to find all 
+ * nodes that can reach it. Groups connected components that share the same target.
+ * 
+ * **Example - Multiple Targets:**
+ * ```
+ * Input Graph:                    Result Subgraphs:
+ *     A ──→ B ──→ D (target)      Subgraph 1: {nodes: [A,B,D], edges: [A→B,B→D], 
+ *     │                                        source_nodes: [A], target_nodes: [D]}
+ *     └──→ C ──→ E (target)       Subgraph 2: {nodes: [A,C,E], edges: [A→C,C→E],
+ *                                              source_nodes: [A], target_nodes: [E]}
+ * ```
+ * 
+ * @param nodes - All nodes in the full graph
+ * @param edges - All edges in the full graph  
+ * @param source_node_types - Node types to treat as start points (can be empty)
+ * @param target_node_types - Node types to treat as endpoints (must have elements)
+ * @returns PathSubgraphsResult containing all subgraphs leading to targets
+ */
+export const graph_subgraphs_from_targets = new Procedure("graph_subgraphs_from_targets")
+    .input("nodes", ArrayType(GraphNode))
+    .input("edges", ArrayType(GraphEdge))
+    .input("source_node_types", SetType(StringType))
+    .input("target_node_types", SetType(StringType))
+    .output(PathSubgraphsResult)
+    .body(($, { nodes, edges, source_node_types, target_node_types }) => {
+        // Validate target_node_types is not empty
+        $.if(Equal(Size(target_node_types), Const(0n))).then($ => {
+            $.error(Const("target_node_types must contain at least one element"));
+        });
+
+        // Build reverse adjacency list (for backward traversal)
+        const reverseAdjacencyList = $.let(NewDict(StringType, ArrayType(StringType)));
+        
+        $.forArray(edges, ($, edge) => {
+            const fromId = $.let(GetField(edge, "from"));
+            const toId = $.let(GetField(edge, "to"));
+            
+            // Build reverse adjacency (to -> from)
+            $.if(In(reverseAdjacencyList, toId)).then($ => {
+                const parents = $.let(Get(reverseAdjacencyList, toId));
+                $.pushLast(parents, fromId);
+            }).else($ => {
+                $.insert(reverseAdjacencyList, toId, NewArray(StringType, [fromId]));
+            });
+        });
+
+        // Create node lookup dictionary
+        const nodeDict = $.let(NewDict(StringType, GraphNode));
+        $.forArray(nodes, ($, node) => {
+            const nodeId = $.let(GetField(node, "id"));
+            $.insert(nodeDict, nodeId, node);
+        });
+
+        // Find all target nodes
+        const targetNodes = $.let(NewArray(GraphNode));
+        $.forArray(nodes, ($, node) => {
+            const nodeType = $.let(GetField(node, "type"));
+            $.if(In(target_node_types, nodeType)).then($ => {
+                $.pushLast(targetNodes, node);
+            });
+        });
+
+        // If no target nodes found, return empty result
+        $.if(Equal(Size(targetNodes), Const(0n))).then($ => {
+            $.return(Struct({
+                subgraphs: NewArray(PathSubgraph)
+            }));
+        });
+
+        // For each connected component containing targets, perform backward traversal
+        const globalVisited = $.let(NewSet(StringType));
+        const subgraphs = $.let(NewArray(PathSubgraph));
+
+        $.forArray(targetNodes, ($, targetNode) => {
+            const targetId = $.let(GetField(targetNode, "id"));
+            
+            // Skip if already processed in another subgraph
+            $.if(In(globalVisited, targetId)).then(() => {
+                // Continue to next iteration
+            }).else($ => {
+                // Backward traversal from this target
+                const subgraphNodes = $.let(NewSet(StringType));
+                const stack = $.let(NewArray(StringType, [targetId]));
+                const visited = $.let(NewSet(StringType));
+
+                $.while(Greater(Size(stack), Const(0n)), $ => {
+                    const current = $.let(Get(stack, Subtract(Size(stack), Const(1n))));
+                    $.deleteLast(stack);
+
+                    $.if(Not(In(visited, current))).then($ => {
+                        $.insert(visited, current);
+                        $.insert(subgraphNodes, current);
+
+                        // Add parents to stack for backward traversal
+                        $.if(In(reverseAdjacencyList, current)).then($ => {
+                            const parents = $.let(ToArray(Get(reverseAdjacencyList, current, NewArray(StringType))));
+                            $.forArray(parents, ($, parent) => {
+                                $.if(Not(In(visited, parent))).then($ => {
+                                    $.pushLast(stack, parent);
+                                });
+                            });
+                        });
+                    });
+                });
+
+                // Mark all nodes in this subgraph as globally visited
+                $.forSet(subgraphNodes, ($, nodeId) => {
+                    $.insertOrUpdate(globalVisited, nodeId);
+                });
+
+                // Extract nodes for this subgraph
+                const subgraphNodeArray = $.let(NewArray(GraphNode));
+                const subgraphSourceNodes = $.let(NewArray(GraphNode));
+                const subgraphTargetNodes = $.let(NewArray(GraphNode));
+                
+                $.forSet(subgraphNodes, ($, nodeId) => {
+                    const node = $.let(Get(nodeDict, nodeId));
+                    $.pushLast(subgraphNodeArray, node);
+                    
+                    const nodeType = $.let(GetField(node, "type"));
+                    
+                    // Check if it's a source node (if source_node_types is not empty)
+                    $.if(Greater(Size(source_node_types), Const(0n))).then($ => {
+                        $.if(In(source_node_types, nodeType)).then($ => {
+                            $.pushLast(subgraphSourceNodes, node);
+                        });
+                    }).else($ => {
+                        // If source_node_types is empty, nodes with no incoming edges are sources
+                        $.if(Not(In(reverseAdjacencyList, nodeId))).then($ => {
+                            $.pushLast(subgraphSourceNodes, node);
+                        });
+                    });
+                    
+                    // Check if it's a target node
+                    $.if(In(target_node_types, nodeType)).then($ => {
+                        $.pushLast(subgraphTargetNodes, node);
+                    });
+                });
+
+                // Extract edges for this subgraph
+                const subgraphEdges = $.let(NewArray(GraphEdge));
+                $.forArray(edges, ($, edge) => {
+                    const fromId = $.let(GetField(edge, "from"));
+                    const toId = $.let(GetField(edge, "to"));
+                    
+                    $.if(And(In(subgraphNodes, fromId), In(subgraphNodes, toId))).then($ => {
+                        $.pushLast(subgraphEdges, edge);
+                    });
+                });
+
+                // Create subgraph and add to results
+                const subgraph = $.let(Struct({
+                    nodes: subgraphNodeArray,
+                    edges: subgraphEdges,
+                    source_nodes: subgraphSourceNodes,
+                    target_nodes: subgraphTargetNodes
+                }));
+                
+                $.pushLast(subgraphs, subgraph);
+            });
+        });
+
+        $.return(Struct({
+            subgraphs: subgraphs
+        }));
+    });
+
+/**
+ * Extract all subgraphs that contain paths starting from specified source node types.
+ * Uses forward traversal to find all reachable destinations from source nodes.
+ * 
+ * **Algorithm**: For each source node, performs forward DFS traversal to find all 
+ * reachable nodes. Groups connected components that share the same source.
+ * 
+ * **Example - Multiple Sources:**
+ * ```
+ * Input Graph:                    Result Subgraphs:
+ *     A (source) ──→ C ──→ E      Subgraph 1: {nodes: [A,C,E], edges: [A→C,C→E],
+ *                                             source_nodes: [A], target_nodes: [E]}
+ *     B (source) ──→ D ──→ E      Subgraph 2: {nodes: [B,D,E], edges: [B→D,D→E],
+ *                                             source_nodes: [B], target_nodes: [E]}
+ * ```
+ * 
+ * @param nodes - All nodes in the full graph
+ * @param edges - All edges in the full graph
+ * @param source_node_types - Node types to treat as start points (must have elements)
+ * @param target_node_types - Node types to treat as endpoints (can be empty)
+ * @returns PathSubgraphsResult containing all subgraphs starting from sources
+ */
+export const graph_subgraphs_from_sources = new Procedure("graph_subgraphs_from_sources")
+    .input("nodes", ArrayType(GraphNode))
+    .input("edges", ArrayType(GraphEdge))
+    .input("source_node_types", SetType(StringType))
+    .input("target_node_types", SetType(StringType))
+    .output(PathSubgraphsResult)
+    .body(($, { nodes, edges, source_node_types, target_node_types }) => {
+        // Validate source_node_types is not empty
+        $.if(Equal(Size(source_node_types), Const(0n))).then($ => {
+            $.error(Const("source_node_types must contain at least one element"));
+        });
+
+        // Build forward adjacency list
+        const forwardAdjacencyList = $.let(NewDict(StringType, ArrayType(StringType)));
+        
+        $.forArray(edges, ($, edge) => {
+            const fromId = $.let(GetField(edge, "from"));
+            const toId = $.let(GetField(edge, "to"));
+            
+            $.if(In(forwardAdjacencyList, fromId)).then($ => {
+                const children = $.let(Get(forwardAdjacencyList, fromId));
+                $.pushLast(children, toId);
+            }).else($ => {
+                $.insert(forwardAdjacencyList, fromId, NewArray(StringType, [toId]));
+            });
+        });
+
+        // Create node lookup dictionary
+        const nodeDict = $.let(NewDict(StringType, GraphNode));
+        $.forArray(nodes, ($, node) => {
+            const nodeId = $.let(GetField(node, "id"));
+            $.insert(nodeDict, nodeId, node);
+        });
+
+        // Find all source nodes
+        const sourceNodes = $.let(NewArray(GraphNode));
+        $.forArray(nodes, ($, node) => {
+            const nodeType = $.let(GetField(node, "type"));
+            $.if(In(source_node_types, nodeType)).then($ => {
+                $.pushLast(sourceNodes, node);
+            });
+        });
+
+        // If no source nodes found, return empty result
+        $.if(Equal(Size(sourceNodes), Const(0n))).then($ => {
+            $.return(Struct({
+                subgraphs: NewArray(PathSubgraph)
+            }));
+        });
+
+        // For each connected component containing sources, perform forward traversal
+        const globalVisited = $.let(NewSet(StringType));
+        const subgraphs = $.let(NewArray(PathSubgraph));
+
+        $.forArray(sourceNodes, ($, sourceNode) => {
+            const sourceId = $.let(GetField(sourceNode, "id"));
+            
+            // Skip if already processed in another subgraph
+            $.if(In(globalVisited, sourceId)).then(() => {
+                // Continue to next iteration
+            }).else($ => {
+                // Forward traversal from this source
+                const subgraphNodes = $.let(NewSet(StringType));
+                const stack = $.let(NewArray(StringType, [sourceId]));
+                const visited = $.let(NewSet(StringType));
+
+                $.while(Greater(Size(stack), Const(0n)), $ => {
+                    const current = $.let(Get(stack, Subtract(Size(stack), Const(1n))));
+                    $.deleteLast(stack);
+
+                    $.if(Not(In(visited, current))).then($ => {
+                        $.insert(visited, current);
+                        $.insert(subgraphNodes, current);
+
+                        // Add children to stack for forward traversal
+                        $.if(In(forwardAdjacencyList, current)).then($ => {
+                            const children = $.let(ToArray(Get(forwardAdjacencyList, current, NewArray(StringType))));
+                            $.forArray(children, ($, child) => {
+                                $.if(Not(In(visited, child))).then($ => {
+                                    $.pushLast(stack, child);
+                                });
+                            });
+                        });
+                    });
+                });
+
+                // Mark all nodes in this subgraph as globally visited
+                $.forSet(subgraphNodes, ($, nodeId) => {
+                    $.insertOrUpdate(globalVisited, nodeId);
+                });
+
+                // Extract nodes for this subgraph
+                const subgraphNodeArray = $.let(NewArray(GraphNode));
+                const subgraphSourceNodes = $.let(NewArray(GraphNode));
+                const subgraphTargetNodes = $.let(NewArray(GraphNode));
+                
+                $.forSet(subgraphNodes, ($, nodeId) => {
+                    const node = $.let(Get(nodeDict, nodeId));
+                    $.pushLast(subgraphNodeArray, node);
+                    
+                    const nodeType = $.let(GetField(node, "type"));
+                    
+                    // Check if it's a source node
+                    $.if(In(source_node_types, nodeType)).then($ => {
+                        $.pushLast(subgraphSourceNodes, node);
+                    });
+                    
+                    // Check if it's a target node (if target_node_types is not empty)
+                    $.if(Greater(Size(target_node_types), Const(0n))).then($ => {
+                        $.if(In(target_node_types, nodeType)).then($ => {
+                            $.pushLast(subgraphTargetNodes, node);
+                        });
+                    }).else($ => {
+                        // If target_node_types is empty, nodes with no outgoing edges are targets
+                        $.if(Not(In(forwardAdjacencyList, nodeId))).then($ => {
+                            $.pushLast(subgraphTargetNodes, node);
+                        });
+                    });
+                });
+
+                // Extract edges for this subgraph
+                const subgraphEdges = $.let(NewArray(GraphEdge));
+                $.forArray(edges, ($, edge) => {
+                    const fromId = $.let(GetField(edge, "from"));
+                    const toId = $.let(GetField(edge, "to"));
+                    
+                    $.if(And(In(subgraphNodes, fromId), In(subgraphNodes, toId))).then($ => {
+                        $.pushLast(subgraphEdges, edge);
+                    });
+                });
+
+                // Create subgraph and add to results
+                const subgraph = $.let(Struct({
+                    nodes: subgraphNodeArray,
+                    edges: subgraphEdges,
+                    source_nodes: subgraphSourceNodes,
+                    target_nodes: subgraphTargetNodes
+                }));
+                
+                $.pushLast(subgraphs, subgraph);
+            });
+        });
+
+        $.return(Struct({
+            subgraphs: subgraphs
+        }));
+    });
