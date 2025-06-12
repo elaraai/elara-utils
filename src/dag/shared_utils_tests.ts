@@ -376,6 +376,259 @@ const validate_single_node_test = new UnitTestBuilder("validate_single_node")
     }
   );
 
+// Test 9: Edges without any nodes (all dangling) - CRITICAL EDGE CASE
+const validate_edges_no_nodes_test = new UnitTestBuilder("validate_edges_no_nodes")
+  .procedure(graph_validate)
+  .test(
+    {
+      nodes: [],
+      edges: [
+        { from: "A", to: "B" },
+        { from: "B", to: "C" },
+        { from: "A", to: "A" } // Self-loop on non-existent node
+      ]
+    },
+    {
+      valid_nodes: [],
+      valid_edges: [],
+      orphaned_nodes: [],
+      dangling_edges: [
+        { from: "A", from_type: null, to: "B", to_type: null },
+        { from: "B", from_type: null, to: "C", to_type: null },
+        { from: "A", from_type: null, to: "A", to_type: null }
+      ],
+      duplicate_nodes: [],
+      duplicate_edges: []
+    }
+  );
+
+// Test 10: Duplicate edges with missing nodes - CRITICAL EDGE CASE
+const validate_duplicate_edges_missing_nodes_test = new UnitTestBuilder("validate_duplicate_edges_missing_nodes")
+  .procedure(graph_validate)
+  .test(
+    {
+      nodes: [
+        { id: "A", type: "start" }
+      ],
+      edges: [
+        { from: "A", to: "B" }, // B doesn't exist
+        { from: "A", to: "B" }, // Duplicate of above
+        { from: "C", to: "D" }, // Both don't exist
+        { from: "C", to: "D" }, // Duplicate of above
+        { from: "C", to: "D" }  // Triple of above
+      ]
+    },
+    {
+      valid_nodes: [
+        { id: "A", type: "start" }
+      ],
+      valid_edges: [],
+      orphaned_nodes: [
+        { id: "A", type: "start" } // No valid edges reference A
+      ],
+      dangling_edges: [
+        { from: "A", from_type: "start", to: "B", to_type: null },
+        { from: "A", from_type: "start", to: "B", to_type: null },
+        { from: "C", from_type: null, to: "D", to_type: null },
+        { from: "C", from_type: null, to: "D", to_type: null },
+        { from: "C", from_type: null, to: "D", to_type: null }
+      ],
+      duplicate_nodes: [],
+      duplicate_edges: [
+        { from: "A", from_type: "start", to: "B", to_type: null, count: 2n },
+        { from: "C", from_type: null, to: "D", to_type: null, count: 3n }
+      ]
+    }
+  );
+
+// Test 11: Mixed scenario - some nodes exist, some don't, with duplicates
+const validate_mixed_existence_test = new UnitTestBuilder("validate_mixed_existence")
+  .procedure(graph_validate)
+  .test(
+    {
+      nodes: [
+        { id: "A", type: "real" },
+        { id: "C", type: "real" }
+      ],
+      edges: [
+        { from: "A", to: "B" }, // B doesn't exist
+        { from: "B", to: "C" }, // B doesn't exist but C does
+        { from: "X", to: "Y" }, // Neither exists
+        { from: "A", to: "C" }  // Both exist - valid edge
+      ]
+    },
+    {
+      valid_nodes: [
+        { id: "A", type: "real" },
+        { id: "C", type: "real" }
+      ],
+      valid_edges: [
+        { from: "A", to: "C" }
+      ],
+      orphaned_nodes: [], // Both A and C are referenced by valid edge
+      dangling_edges: [
+        { from: "A", from_type: "real", to: "B", to_type: null },
+        { from: "B", from_type: null, to: "C", to_type: "real" },
+        { from: "X", from_type: null, to: "Y", to_type: null }
+      ],
+      duplicate_nodes: [],
+      duplicate_edges: []
+    }
+  );
+
+// Test 12: Empty string node IDs - CRITICAL EDGE CASE
+const validate_empty_string_ids_test = new UnitTestBuilder("validate_empty_string_ids")
+  .procedure(graph_validate)
+  .test(
+    {
+      nodes: [
+        { id: "", type: "empty" },
+        { id: "A", type: "normal" }
+      ],
+      edges: [
+        { from: "", to: "A" },
+        { from: "A", to: "" },
+        { from: "", to: "" } // Self-loop on empty ID
+      ]
+    },
+    {
+      valid_nodes: [
+        { id: "", type: "empty" },
+        { id: "A", type: "normal" }
+      ],
+      valid_edges: [
+        { from: "", to: "A" },
+        { from: "A", to: "" },
+        { from: "", to: "" }
+      ],
+      orphaned_nodes: [],
+      dangling_edges: [],
+      duplicate_nodes: [],
+      duplicate_edges: []
+    }
+  );
+
+// Test 13: Node IDs containing separator character - CRITICAL EDGE CASE
+const validate_separator_in_ids_test = new UnitTestBuilder("validate_separator_in_ids")
+  .procedure(graph_validate)
+  .test(
+    {
+      nodes: [
+        { id: "A:B", type: "colon_id" },
+        { id: "A", type: "normal" },
+        { id: "B:C", type: "colon_id2" }
+      ],
+      edges: [
+        { from: "A:B", to: "A" },
+        { from: "A", to: "B:C" },
+        { from: "A:B", to: "B:C" } // Both IDs have colons
+      ]
+    },
+    {
+      valid_nodes: [
+        { id: "A", type: "normal" },
+        { id: "A:B", type: "colon_id" },
+        { id: "B:C", type: "colon_id2" }
+      ],
+      valid_edges: [
+        { from: "A:B", to: "A" },
+        { from: "A", to: "B:C" },
+        { from: "A:B", to: "B:C" }
+      ],
+      orphaned_nodes: [],
+      dangling_edges: [],
+      duplicate_nodes: [],
+      duplicate_edges: []
+    }
+  );
+
+// Test 14: Self-loops with non-existent nodes - EDGE CASE
+const validate_self_loop_missing_node_test = new UnitTestBuilder("validate_self_loop_missing_node")
+  .procedure(graph_validate)
+  .test(
+    {
+      nodes: [
+        { id: "A", type: "real" }
+      ],
+      edges: [
+        { from: "A", to: "A" }, // Valid self-loop
+        { from: "B", to: "B" }, // Self-loop on missing node
+        { from: "C", to: "C" }  // Another self-loop on missing node
+      ]
+    },
+    {
+      valid_nodes: [
+        { id: "A", type: "real" }
+      ],
+      valid_edges: [
+        { from: "A", to: "A" }
+      ],
+      orphaned_nodes: [], // A is referenced by its own self-loop
+      dangling_edges: [
+        { from: "B", from_type: null, to: "B", to_type: null },
+        { from: "C", from_type: null, to: "C", to_type: null }
+      ],
+      duplicate_nodes: [],
+      duplicate_edges: []
+    }
+  );
+
+// Test 15: Extreme duplicate counts - STRESS TEST
+const validate_extreme_duplicates_test = new UnitTestBuilder("validate_extreme_duplicates")
+  .procedure(graph_validate)
+  .test(
+    {
+      nodes: [
+        { id: "A", type: "first" },
+        { id: "A", type: "second" },
+        { id: "A", type: "third" },
+        { id: "A", type: "fourth" },
+        { id: "A", type: "fifth" }
+      ],
+      edges: [
+        { from: "A", to: "B" },
+        { from: "A", to: "B" },
+        { from: "A", to: "B" },
+        { from: "A", to: "B" },
+        { from: "A", to: "B" },
+        { from: "A", to: "B" }
+      ]
+    },
+    {
+      valid_nodes: [
+        { id: "A", type: "first" } // First occurrence kept
+      ],
+      valid_edges: [],
+      orphaned_nodes: [
+        { id: "A", type: "first" } // A is orphaned since B doesn't exist
+      ],
+      dangling_edges: [
+        { from: "A", from_type: "first", to: "B", to_type: null },
+        { from: "A", from_type: "first", to: "B", to_type: null },
+        { from: "A", from_type: "first", to: "B", to_type: null },
+        { from: "A", from_type: "first", to: "B", to_type: null },
+        { from: "A", from_type: "first", to: "B", to_type: null },
+        { from: "A", from_type: "first", to: "B", to_type: null }
+      ],
+      duplicate_nodes: [
+        {
+          id: "A",
+          count: 5n,
+          instances: [
+            { id: "A", type: "first" },
+            { id: "A", type: "second" },
+            { id: "A", type: "third" },
+            { id: "A", type: "fourth" },
+            { id: "A", type: "fifth" }
+          ]
+        }
+      ],
+      duplicate_edges: [
+        { from: "A", from_type: "first", to: "B", to_type: null, count: 6n }
+      ]
+    }
+  );
+
 export default Template(
   // Adjacency list tests
   basic_adjacency_test,
@@ -391,5 +644,16 @@ export default Template(
   validate_orphaned_nodes_test,
   validate_complex_issues_test,
   validate_empty_test,
-  validate_single_node_test
+  validate_single_node_test,
+  
+  // Critical edge case tests (added to prevent production failures)
+  validate_edges_no_nodes_test,
+  validate_duplicate_edges_missing_nodes_test,
+  validate_mixed_existence_test,
+  
+  // Additional edge case tests for robustness
+  validate_empty_string_ids_test,
+  validate_separator_in_ids_test,
+  validate_self_loop_missing_node_test,
+  validate_extreme_duplicates_test
 );

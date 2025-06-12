@@ -171,7 +171,7 @@ export const graph_validate = new Procedure("graph_validate")
         $.insert(nodeTypeMap, nodeId, nodeType);
         $.insert(nodeInstanceMap, nodeId, NewArray(GraphNode, [node]));
       }).else($ => {
-        const instances = $.let(Get(nodeInstanceMap, nodeId));
+        const instances = $.let(Get(nodeInstanceMap, nodeId, NewArray(GraphNode)));
         $.pushLast(instances, node);
       });
     });
@@ -182,9 +182,9 @@ export const graph_validate = new Procedure("graph_validate")
       $.pushLast(validNodes, node);
       $.insert(validNodeIds, nodeId);
       
-      const count = $.let(Get(nodeCountMap, nodeId));
+      const count = $.let(Get(nodeCountMap, nodeId, Const(0n)));
       $.if(Greater(count, Const(1n))).then($ => {
-        const instances = $.let(Get(nodeInstanceMap, nodeId));
+        const instances = $.let(Get(nodeInstanceMap, nodeId, NewArray(GraphNode)));
         $.pushLast(duplicateNodes, Struct({
           id: nodeId,
           count: count,
@@ -241,7 +241,7 @@ export const graph_validate = new Procedure("graph_validate")
           });
         }).else($ => {
           // To node doesn't exist - create dangling edge with type info
-          const fromType = $.let(Get(nodeTypeMap, fromId)); // null if missing
+          const fromType = $.let(Get(nodeTypeMap, fromId, Const(null))); // null if missing
           $.pushLast(danglingEdges, Struct({
             from: fromId,
             from_type: fromType,
@@ -252,7 +252,7 @@ export const graph_validate = new Procedure("graph_validate")
       }).else($ => {
         // From node doesn't exist - create dangling edge with type info
         $.if(toExists).then($ => {
-          const toType = $.let(Get(nodeTypeMap, toId));
+          const toType = $.let(Get(nodeTypeMap, toId, Const(null)));
           $.pushLast(danglingEdges, Struct({
             from: fromId,
             from_type: Const(null), // Unknown type since node doesn't exist
@@ -277,8 +277,8 @@ export const graph_validate = new Procedure("graph_validate")
       $.if(Greater(count, Const(1n))).then($ => {
         const fromId = $.let(GetField(edgeInfo, "from"));
         const toId = $.let(GetField(edgeInfo, "to"));
-        const fromType = $.let(Get(nodeTypeMap, fromId)); // null if missing
-        const toType = $.let(Get(nodeTypeMap, toId)); // null if missing
+        const fromType = $.let(Get(nodeTypeMap, fromId, Const(null))); // null if missing
+        const toType = $.let(Get(nodeTypeMap, toId, Const(null))); // null if missing
         
         $.pushLast(duplicateEdges, Struct({
           from: fromId,
