@@ -1,0 +1,395 @@
+import { UnitTestBuilder } from "@elaraai/core";
+import { Template } from "@elaraai/core";
+import { graph_build_adjacency_lists, graph_validate } from "./shared_utils";
+
+// Basic adjacency list building test
+const basic_adjacency_test = new UnitTestBuilder("basic_adjacency")
+  .procedure(graph_build_adjacency_lists)
+  .test(
+    {
+      edges: [
+        { from: "A", to: "B" },
+        { from: "A", to: "C" },
+        { from: "B", to: "D" }
+      ]
+    },
+    {
+      adjacency_list: new Map([
+        ["A", ["B", "C"]],
+        ["B", ["D"]]
+      ]),
+      reverse_adjacency_list: new Map([
+        ["B", ["A"]],
+        ["C", ["A"]],
+        ["D", ["B"]]
+      ])
+    }
+  );
+
+// Empty graph test
+const empty_adjacency_test = new UnitTestBuilder("empty_adjacency")
+  .procedure(graph_build_adjacency_lists)
+  .test(
+    {
+      edges: []
+    },
+    {
+      adjacency_list: new Map(),
+      reverse_adjacency_list: new Map()
+    }
+  );
+
+// Self-loop test
+const self_loop_test = new UnitTestBuilder("self_loop_adjacency")
+  .procedure(graph_build_adjacency_lists)
+  .test(
+    {
+      edges: [
+        { from: "A", to: "A" },
+        { from: "A", to: "B" }
+      ]
+    },
+    {
+      adjacency_list: new Map([
+        ["A", ["A", "B"]]
+      ]),
+      reverse_adjacency_list: new Map([
+        ["A", ["A"]],
+        ["B", ["A"]]
+      ])
+    }
+  );
+
+// Multiple edges between same nodes test
+const multiple_edges_test = new UnitTestBuilder("multiple_edges_adjacency")
+  .procedure(graph_build_adjacency_lists)
+  .test(
+    {
+      edges: [
+        { from: "A", to: "B" },
+        { from: "A", to: "B" },
+        { from: "B", to: "A" }
+      ]
+    },
+    {
+      adjacency_list: new Map([
+        ["A", ["B", "B"]],
+        ["B", ["A"]]
+      ]),
+      reverse_adjacency_list: new Map([
+        ["B", ["A", "A"]],
+        ["A", ["B"]]
+      ])
+    }
+  );
+
+// === GRAPH VALIDATE TESTS ===
+
+// Test 1: Clean graph (no issues)
+const validate_clean_test = new UnitTestBuilder("validate_clean")
+  .procedure(graph_validate)
+  .test(
+    {
+      nodes: [
+        { id: "A", type: "start" },
+        { id: "B", type: "middle" },
+        { id: "C", type: "end" }
+      ],
+      edges: [
+        { from: "A", to: "B" },
+        { from: "B", to: "C" }
+      ]
+    },
+    {
+      valid_nodes: [
+        { id: "A", type: "start" },
+        { id: "B", type: "middle" },
+        { id: "C", type: "end" }
+      ],
+      valid_edges: [
+        { from: "A", to: "B" },
+        { from: "B", to: "C" }
+      ],
+      orphaned_nodes: [],
+      dangling_edges: [],
+      duplicate_nodes: [],
+      duplicate_edges: []
+    }
+  );
+
+// Test 2: Duplicate nodes
+const validate_duplicate_nodes_test = new UnitTestBuilder("validate_duplicate_nodes")
+  .procedure(graph_validate)
+  .test(
+    {
+      nodes: [
+        { id: "A", type: "start" },
+        { id: "A", type: "start_copy" }, // Duplicate
+        { id: "B", type: "middle" },
+        { id: "B", type: "middle_copy" }, // Duplicate
+        { id: "C", type: "end" }
+      ],
+      edges: [
+        { from: "A", to: "B" },
+        { from: "B", to: "C" }
+      ]
+    },
+    {
+      valid_nodes: [
+        { id: "A", type: "start" }, // First occurrence kept
+        { id: "B", type: "middle" }, // First occurrence kept
+        { id: "C", type: "end" }
+      ],
+      valid_edges: [
+        { from: "A", to: "B" },
+        { from: "B", to: "C" }
+      ],
+      orphaned_nodes: [],
+      dangling_edges: [],
+      duplicate_nodes: [
+        {
+          id: "A",
+          count: 2n,
+          instances: [
+            { id: "A", type: "start" },
+            { id: "A", type: "start_copy" }
+          ]
+        },
+        {
+          id: "B",
+          count: 2n,
+          instances: [
+            { id: "B", type: "middle" },
+            { id: "B", type: "middle_copy" }
+          ]
+        }
+      ],
+      duplicate_edges: []
+    }
+  );
+
+// Test 3: Duplicate edges
+const validate_duplicate_edges_test = new UnitTestBuilder("validate_duplicate_edges")
+  .procedure(graph_validate)
+  .test(
+    {
+      nodes: [
+        { id: "A", type: "start" },
+        { id: "B", type: "middle" },
+        { id: "C", type: "end" }
+      ],
+      edges: [
+        { from: "A", to: "B" },
+        { from: "A", to: "B" }, // Duplicate
+        { from: "B", to: "C" },
+        { from: "B", to: "C" }, // Duplicate
+        { from: "B", to: "C" }  // Triple
+      ]
+    },
+    {
+      valid_nodes: [
+        { id: "A", type: "start" },
+        { id: "B", type: "middle" },
+        { id: "C", type: "end" }
+      ],
+      valid_edges: [
+        { from: "A", to: "B" }, // Only one kept
+        { from: "B", to: "C" }  // Only one kept
+      ],
+      orphaned_nodes: [],
+      dangling_edges: [],
+      duplicate_nodes: [],
+      duplicate_edges: [
+        { from: "A", from_type: "start", to: "B", to_type: "middle", count: 2n },
+        { from: "B", from_type: "middle", to: "C", to_type: "end", count: 3n }
+      ]
+    }
+  );
+
+// Test 4: Dangling edges
+const validate_dangling_edges_test = new UnitTestBuilder("validate_dangling_edges")
+  .procedure(graph_validate)
+  .test(
+    {
+      nodes: [
+        { id: "A", type: "start" },
+        { id: "B", type: "middle" }
+      ],
+      edges: [
+        { from: "A", to: "B" },        // Valid
+        { from: "A", to: "C" },        // Dangling: C doesn't exist
+        { from: "D", to: "B" },        // Dangling: D doesn't exist
+        { from: "E", to: "F" }         // Dangling: Both E and F don't exist
+      ]
+    },
+    {
+      valid_nodes: [
+        { id: "A", type: "start" },
+        { id: "B", type: "middle" }
+      ],
+      valid_edges: [
+        { from: "A", to: "B" }
+      ],
+      orphaned_nodes: [],
+      dangling_edges: [
+        { from: "A", from_type: "start", to: "C", to_type: null },
+        { from: "D", from_type: null, to: "B", to_type: "middle" },
+        { from: "E", from_type: null, to: "F", to_type: null }
+      ],
+      duplicate_nodes: [],
+      duplicate_edges: []
+    }
+  );
+
+// Test 5: Orphaned nodes
+const validate_orphaned_nodes_test = new UnitTestBuilder("validate_orphaned_nodes")
+  .procedure(graph_validate)
+  .test(
+    {
+      nodes: [
+        { id: "A", type: "start" },
+        { id: "B", type: "middle" },
+        { id: "C", type: "end" },
+        { id: "D", type: "orphan1" }, // Not referenced by any edges
+        { id: "E", type: "orphan2" }  // Not referenced by any edges
+      ],
+      edges: [
+        { from: "A", to: "B" },
+        { from: "B", to: "C" }
+      ]
+    },
+    {
+      valid_nodes: [
+        { id: "A", type: "start" },
+        { id: "B", type: "middle" },
+        { id: "C", type: "end" },
+        { id: "D", type: "orphan1" },
+        { id: "E", type: "orphan2" }
+      ],
+      valid_edges: [
+        { from: "A", to: "B" },
+        { from: "B", to: "C" }
+      ],
+      orphaned_nodes: [
+        { id: "D", type: "orphan1" },
+        { id: "E", type: "orphan2" }
+      ],
+      dangling_edges: [],
+      duplicate_nodes: [],
+      duplicate_edges: []
+    }
+  );
+
+// Test 6: Complex graph with all types of issues
+const validate_complex_issues_test = new UnitTestBuilder("validate_complex_issues")
+  .procedure(graph_validate)
+  .test(
+    {
+      nodes: [
+        { id: "A", type: "start" },
+        { id: "A", type: "start_duplicate" }, // Duplicate
+        { id: "B", type: "middle" },
+        { id: "C", type: "end" },
+        { id: "D", type: "orphan" } // Orphaned
+      ],
+      edges: [
+        { from: "A", to: "B" },
+        { from: "A", to: "B" }, // Duplicate edge
+        { from: "B", to: "C" },
+        { from: "B", to: "E" }, // Dangling: E doesn't exist
+        { from: "F", to: "C" }  // Dangling: F doesn't exist
+      ]
+    },
+    {
+      valid_nodes: [
+        { id: "A", type: "start" }, // First occurrence
+        { id: "B", type: "middle" },
+        { id: "C", type: "end" },
+        { id: "D", type: "orphan" }
+      ],
+      valid_edges: [
+        { from: "A", to: "B" }, // Only one kept
+        { from: "B", to: "C" }
+      ],
+      orphaned_nodes: [
+        { id: "D", type: "orphan" }
+      ],
+      dangling_edges: [
+        { from: "B", from_type: "middle", to: "E", to_type: null },
+        { from: "F", from_type: null, to: "C", to_type: "end" }
+      ],
+      duplicate_nodes: [
+        {
+          id: "A",
+          count: 2n,
+          instances: [
+            { id: "A", type: "start" },
+            { id: "A", type: "start_duplicate" }
+          ]
+        }
+      ],
+      duplicate_edges: [
+        { from: "A", from_type: "start", to: "B", to_type: "middle", count: 2n }
+      ]
+    }
+  );
+
+// Test 7: Empty graph
+const validate_empty_test = new UnitTestBuilder("validate_empty")
+  .procedure(graph_validate)
+  .test(
+    {
+      nodes: [],
+      edges: []
+    },
+    {
+      valid_nodes: [],
+      valid_edges: [],
+      orphaned_nodes: [],
+      dangling_edges: [],
+      duplicate_nodes: [],
+      duplicate_edges: []
+    }
+  );
+
+// Test 8: Single node (always orphaned unless self-loop)
+const validate_single_node_test = new UnitTestBuilder("validate_single_node")
+  .procedure(graph_validate)
+  .test(
+    {
+      nodes: [
+        { id: "A", type: "lonely" }
+      ],
+      edges: []
+    },
+    {
+      valid_nodes: [
+        { id: "A", type: "lonely" }
+      ],
+      valid_edges: [],
+      orphaned_nodes: [
+        { id: "A", type: "lonely" }
+      ],
+      dangling_edges: [],
+      duplicate_nodes: [],
+      duplicate_edges: []
+    }
+  );
+
+export default Template(
+  // Adjacency list tests
+  basic_adjacency_test,
+  empty_adjacency_test,
+  self_loop_test,
+  multiple_edges_test,
+  
+  // Graph validation tests
+  validate_clean_test,
+  validate_duplicate_nodes_test,
+  validate_duplicate_edges_test,
+  validate_dangling_edges_test,
+  validate_orphaned_nodes_test,
+  validate_complex_issues_test,
+  validate_empty_test,
+  validate_single_node_test
+);

@@ -1,0 +1,22 @@
+{
+  "name": "tasks",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {},
+  "keywords": [],
+  "author": "",
+  "license": "",
+  "devDependencies": {
+    "@types/node": "^20.11.16",
+    "typescript": "~5.4.2"
+  },
+  "dependencies": {
+    "@elaraai/core": "7.0.21-beta.29",
+    "@elaraai/cli": "7.0.21-beta.29"
+  },
+  "engines": {
+    "node": ">=20",
+    "npm": ">=10"
+  }
+}
