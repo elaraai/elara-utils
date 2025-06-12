@@ -996,6 +996,7 @@ const self_loop_test = new UnitTestBuilder("self_loop")
         }
     );
 
+
 export default Template(
   // All paths tests
   all_paths_linear_test,

@@ -16,7 +16,6 @@ import {
   Size,
   Struct,
   Subtract,
-  ToArray,
 } from "@elaraai/core";
 
 import { ArrayType, FloatType, IntegerType, Nullable, SetType, StringType, StructType } from "@elaraai/core";
@@ -737,7 +736,7 @@ export const graph_subgraphs_from_targets = new Procedure("graph_subgraphs_from_
 
                         // Add parents to stack for backward traversal
                         $.if(In(reverseAdjacencyList, current)).then($ => {
-                            const parents = $.let(ToArray(Get(reverseAdjacencyList, current)));
+                            const parents = $.let(Get(reverseAdjacencyList, current));
                             $.forArray(parents, ($, parent) => {
                                 // Collect edge during traversal
                                 $.pushLast(subgraphEdges, Struct({from: parent, to: current}));
@@ -900,7 +899,7 @@ export const graph_subgraphs_from_sources = new Procedure("graph_subgraphs_from_
 
                         // Add children to stack for forward traversal
                         $.if(In(forwardAdjacencyList, current)).then($ => {
-                            const children = $.let(ToArray(Get(forwardAdjacencyList, current, NewArray(StringType))));
+                            const children = $.let(Get(forwardAdjacencyList, current));
                             $.forArray(children, ($, child) => {
                                 // Collect edge during traversal
                                 $.pushLast(subgraphEdges, Struct({from: current, to: child}));
