@@ -1,7 +1,6 @@
 import { Procedure } from "@elaraai/core";
 import {
   Add,
-  And,
   Const,
   Duration,
   Equal,
@@ -721,11 +720,10 @@ export const graph_subgraphs_from_targets = new Procedure("graph_subgraphs_from_
             const targetId = $.let(GetField(targetNode, "id"));
             
             // Skip if already processed in another subgraph
-            $.if(In(globalVisited, targetId)).then(() => {
-                // Continue to next iteration
-            }).else($ => {
+            $.if(Not(In(globalVisited, targetId))).then($ => {
                 // Backward traversal from this target
                 const subgraphNodes = $.let(NewSet(StringType));
+                const subgraphEdges = $.let(NewArray(GraphEdge));
                 const stack = $.let(NewArray(StringType, [targetId]));
                 const visited = $.let(NewSet(StringType));
 
@@ -739,8 +737,11 @@ export const graph_subgraphs_from_targets = new Procedure("graph_subgraphs_from_
 
                         // Add parents to stack for backward traversal
                         $.if(In(reverseAdjacencyList, current)).then($ => {
-                            const parents = $.let(ToArray(Get(reverseAdjacencyList, current, NewArray(StringType))));
+                            const parents = $.let(ToArray(Get(reverseAdjacencyList, current)));
                             $.forArray(parents, ($, parent) => {
+                                // Collect edge during traversal
+                                $.pushLast(subgraphEdges, Struct({from: parent, to: current}));
+                                
                                 $.if(Not(In(visited, parent))).then($ => {
                                     $.pushLast(stack, parent);
                                 });
@@ -783,16 +784,7 @@ export const graph_subgraphs_from_targets = new Procedure("graph_subgraphs_from_
                     });
                 });
 
-                // Extract edges for this subgraph
-                const subgraphEdges = $.let(NewArray(GraphEdge));
-                $.forArray(edges, ($, edge) => {
-                    const fromId = $.let(GetField(edge, "from"));
-                    const toId = $.let(GetField(edge, "to"));
-                    
-                    $.if(And(In(subgraphNodes, fromId), In(subgraphNodes, toId))).then($ => {
-                        $.pushLast(subgraphEdges, edge);
-                    });
-                });
+                // Edges already collected during traversal
 
                 // Create subgraph and add to results
                 const subgraph = $.let(Struct({
@@ -891,11 +883,10 @@ export const graph_subgraphs_from_sources = new Procedure("graph_subgraphs_from_
             const sourceId = $.let(GetField(sourceNode, "id"));
             
             // Skip if already processed in another subgraph
-            $.if(In(globalVisited, sourceId)).then(() => {
-                // Continue to next iteration
-            }).else($ => {
+            $.if(Not(In(globalVisited, sourceId))).then($ => {
                 // Forward traversal from this source
                 const subgraphNodes = $.let(NewSet(StringType));
+                const subgraphEdges = $.let(NewArray(GraphEdge));
                 const stack = $.let(NewArray(StringType, [sourceId]));
                 const visited = $.let(NewSet(StringType));
 
@@ -911,6 +902,9 @@ export const graph_subgraphs_from_sources = new Procedure("graph_subgraphs_from_
                         $.if(In(forwardAdjacencyList, current)).then($ => {
                             const children = $.let(ToArray(Get(forwardAdjacencyList, current, NewArray(StringType))));
                             $.forArray(children, ($, child) => {
+                                // Collect edge during traversal
+                                $.pushLast(subgraphEdges, Struct({from: current, to: child}));
+                                
                                 $.if(Not(In(visited, child))).then($ => {
                                     $.pushLast(stack, child);
                                 });
@@ -953,16 +947,7 @@ export const graph_subgraphs_from_sources = new Procedure("graph_subgraphs_from_
                     });
                 });
 
-                // Extract edges for this subgraph
-                const subgraphEdges = $.let(NewArray(GraphEdge));
-                $.forArray(edges, ($, edge) => {
-                    const fromId = $.let(GetField(edge, "from"));
-                    const toId = $.let(GetField(edge, "to"));
-                    
-                    $.if(And(In(subgraphNodes, fromId), In(subgraphNodes, toId))).then($ => {
-                        $.pushLast(subgraphEdges, edge);
-                    });
-                });
+                // Edges already collected during traversal
 
                 // Create subgraph and add to results
                 const subgraph = $.let(Struct({

@@ -373,8 +373,8 @@ const targets_linear_test = new UnitTestBuilder("targets_linear")
                         { id: "C", type: "target" }
                     ],
                     edges: [
-                        { from: "A", to: "B" },
-                        { from: "B", to: "C" }
+                        { from: "B", to: "C" },
+                        { from: "A", to: "B" }
                     ],
                     source_nodes: [
                         { id: "A", type: "source" }
@@ -457,8 +457,8 @@ const targets_multiple_branches_test = new UnitTestBuilder("targets_multiple_bra
                         { id: "D", type: "target" }
                     ],
                     edges: [
-                        { from: "A", to: "B" },
-                        { from: "B", to: "D" }
+                        { from: "B", to: "D" },
+                        { from: "A", to: "B" }
                     ],
                     source_nodes: [
                         { id: "A", type: "source" }
@@ -474,8 +474,8 @@ const targets_multiple_branches_test = new UnitTestBuilder("targets_multiple_bra
                         { id: "E", type: "target" }
                     ],
                     edges: [
-                        { from: "A", to: "C" },
-                        { from: "C", to: "E" }
+                        { from: "C", to: "E" },
+                        { from: "A", to: "C" }
                     ],
                     source_nodes: [
                         { id: "A", type: "source" }
@@ -747,10 +747,10 @@ const targets_cycle_test = new UnitTestBuilder("targets_cycle")
                         { id: "D", type: "target" }
                     ],
                     edges: [
-                        { from: "A", to: "B" },
+                        { from: "C", to: "D" },
                         { from: "B", to: "C" },
-                        { from: "C", to: "B" },
-                        { from: "C", to: "D" }
+                        { from: "A", to: "B" },
+                        { from: "C", to: "B" }
                     ],
                     source_nodes: [
                         { id: "A", type: "source" }
@@ -938,10 +938,10 @@ const diamond_pattern_test = new UnitTestBuilder("diamond_pattern")
                         { id: "D", type: "target" }
                     ],
                     edges: [
-                        { from: "A", to: "B" },
-                        { from: "A", to: "C" },
                         { from: "B", to: "D" },
-                        { from: "C", to: "D" }
+                        { from: "C", to: "D" },
+                        { from: "A", to: "C" },
+                        { from: "A", to: "B" }
                     ],
                     source_nodes: [
                         { id: "A", type: "source" }
@@ -981,9 +981,9 @@ const self_loop_test = new UnitTestBuilder("self_loop")
                         { id: "C", type: "target" }
                     ],
                     edges: [
+                        { from: "B", to: "C" },
                         { from: "A", to: "B" },
-                        { from: "B", to: "B" },
-                        { from: "B", to: "C" }
+                        { from: "B", to: "B" }
                     ],
                     source_nodes: [
                         { id: "A", type: "source" }
