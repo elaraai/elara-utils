@@ -298,3 +298,25 @@ export const PathSubgraph = StructType({
 export const PathSubgraphsResult = StructType({
     subgraphs: ArrayType(PathSubgraph)
 });
+
+// Graph overview statistics result
+export const GraphOverviewStatistics = StructType({
+    // Basic counts
+    node_count: IntegerType,
+    edge_count: IntegerType,
+    
+    // Types
+    node_types: ArrayType(StringType),
+    unique_node_types_count: IntegerType,
+    
+    // Structural metrics
+    max_depth: IntegerType,
+    source_node_types: ArrayType(StringType),
+    target_node_types: ArrayType(StringType),
+    average_degree: FloatType,
+    branching_factor: FloatType,
+    
+    // Type aggregation details
+    aggregate_nodes: ArrayType(GraphTypeAggregateNode),
+    aggregate_edges: ArrayType(GraphTypeAggregateEdge)
+});

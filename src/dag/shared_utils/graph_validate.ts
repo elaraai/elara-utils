@@ -14,7 +14,7 @@ import {
   Struct,
 } from "@elaraai/core";
 
-import { ArrayType, DictType, IntegerType, StringType, StructType } from "@elaraai/core";
+import { ArrayType, IntegerType, StringType, StructType } from "@elaraai/core";
 
 import { 
   GraphEdge, 
@@ -23,66 +23,7 @@ import {
   GraphDuplicateNode, 
   GraphDuplicateEdge,
   GraphDanglingEdge
-} from "./types";
-
-/**
- * Shared utility for building adjacency lists from graph edges
- * 
- * Creates both forward and reverse adjacency list representations of a graph.
- * This is a fundamental operation used by most graph algorithms, so extracting 
- * it into a shared procedure eliminates code duplication across 17+ procedures.
- * 
- * **Input:**
- * - edges: Array of directed edges with {from: StringType, to: StringType}
- * 
- * **Output:**
- * - adjacency_list: Dictionary mapping each node to its outgoing neighbors
- * - reverse_adjacency_list: Dictionary mapping each node to its incoming neighbors
- * 
- * **Algorithm:**
- * For each edge (from → to):
- * 1. Add 'to' to adjacency_list[from]
- * 2. Add 'from' to reverse_adjacency_list[to]
- * 
- * @param edges Array of directed edges representing the graph structure
- * @returns Object with both forward and reverse adjacency dictionaries
- */
-export const graph_build_adjacency_lists = new Procedure("graph_build_adjacency_lists")
-  .input("edges", ArrayType(GraphEdge))
-  .output(StructType({
-    adjacency_list: DictType(StringType, ArrayType(StringType)),
-    reverse_adjacency_list: DictType(StringType, ArrayType(StringType))
-  }))
-  .body(($, { edges }) => {
-    const adjacencyList = $.let(NewDict(StringType, ArrayType(StringType)));
-    const reverseAdjacencyList = $.let(NewDict(StringType, ArrayType(StringType)));
-    
-    $.forArray(edges, ($, edge) => {
-      const fromId = $.let(GetField(edge, "from"));
-      const toId = $.let(GetField(edge, "to"));
-      
-      // Build forward adjacency list
-      $.if(In(adjacencyList, fromId)).then($ => {
-        const neighbors = $.let(Get(adjacencyList, fromId));
-        $.pushLast(neighbors, toId);
-      }).else($ => {
-        $.insert(adjacencyList, fromId, NewArray(StringType, [toId]));
-      });
-      
-      // Build reverse adjacency list
-      $.if(In(reverseAdjacencyList, toId)).then($ => {
-        const parents = $.let(Get(reverseAdjacencyList, toId));
-        $.pushLast(parents, fromId);
-      }).else($ => {
-        $.insert(reverseAdjacencyList, toId, NewArray(StringType, [fromId]));
-      });
-    });
-    
-    $.return(Struct({
-      adjacency_list: adjacencyList,
-      reverse_adjacency_list: reverseAdjacencyList
-    }));
-  });
+} from "../types";
 
 /**
  * Graph validation procedure - validates graph structure and identifies issues
