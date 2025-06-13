@@ -103,7 +103,7 @@ dag_shared_utils_validate_tests:
 
 # Path analysis tests
 .PHONY: dag_path_analysis_tests
-dag_path_analysis_tests: dag_path_analysis_all_paths_tests dag_path_analysis_membership_tests dag_path_analysis_shortest_path_tests dag_path_analysis_critical_path_tests dag_path_analysis_subgraphs_targets_tests dag_path_analysis_subgraphs_sources_tests
+dag_path_analysis_tests: dag_path_analysis_all_paths_tests dag_path_analysis_membership_tests dag_path_analysis_shortest_path_tests dag_path_analysis_critical_path_tests dag_path_analysis_subgraphs_tests
 
 .PHONY: dag_path_analysis_all_paths_tests
 dag_path_analysis_all_paths_tests:
@@ -121,10 +121,6 @@ dag_path_analysis_shortest_path_tests:
 dag_path_analysis_critical_path_tests:
 	edk template test -t ts --path src/dag/__tests/path_analysis_critical_path_tests.ts
 
-.PHONY: dag_path_analysis_subgraphs_targets_tests
-dag_path_analysis_subgraphs_targets_tests:
-	edk template test -t ts --path src/dag/__tests/path_analysis_subgraphs_targets_tests.ts
-
-.PHONY: dag_path_analysis_subgraphs_sources_tests
-dag_path_analysis_subgraphs_sources_tests:
-	edk template test -t ts --path src/dag/__tests/path_analysis_subgraphs_sources_tests.ts
+.PHONY: dag_path_analysis_subgraphs_tests
+dag_path_analysis_subgraphs_tests:
+	edk template test -t ts --path src/dag/__tests/path_analysis_subgraphs_tests.ts

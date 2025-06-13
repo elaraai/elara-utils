@@ -56,8 +56,7 @@ Advanced path finding and subgraph extraction:
 - `path_membership.ts` - Determines which paths each node belongs to by analyzing participation across all possible routes between start and end
 - `shortest_path.ts` - Finds the path with minimum total weight from start to end node using Dijkstra's algorithm for weighted graphs
 - `critical_path.ts` - Identifies the longest path through a project network to determine project duration and critical tasks for scheduling
-- `subgraphs_from_sources.ts` - **Optimized O(V + E)** - Extracts subgraphs by connected components containing specified source node types with dramatic performance improvements for large graphs
-- `subgraphs_from_targets.ts` - **Optimized O(V + E)** - Extracts subgraphs by connected components containing specified target node types with dramatic performance improvements for large graphs
+- `subgraphs.ts` - **Optimized O(V + E)** - Extracts subgraphs by connected components with optional node type filtering, with dramatic performance improvements for large graphs
 - `all_paths_to_targets.ts` - Finds all paths from any sources to specific target nodes using forward traversal
 - `index.ts` - Exports all path analysis procedures
 
@@ -122,7 +121,7 @@ import {
   graph_connected_components
 } from "elara-utils/src/dag/graph_traversal";
 import { 
-  graph_subgraphs_from_sources
+  graph_subgraphs
 } from "elara-utils/src/dag/path_analysis";
 import { 
   graph_validate 
@@ -140,12 +139,11 @@ const myAnalysisProcedure = new Procedure("my_analysis")
     // Validate graph structure first
     const validation = $.let(procs.graph_validate(Struct({ nodes, edges })));
     
-    // Extract optimized subgraphs using connected components
-    const result = $.let(procs.graph_subgraphs_from_sources(Struct({ 
+    // Extract subgraphs with optional filtering
+    const result = $.let(procs.graph_subgraphs(Struct({ 
       nodes, 
       edges, 
-      source_node_types: source_types,
-      target_node_types: NewSet(StringType, ["output"])
+      filter_by_types: source_types
     })));
     
     $.return(result);
