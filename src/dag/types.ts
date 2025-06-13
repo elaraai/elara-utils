@@ -287,7 +287,7 @@ export const GraphValidateResult = StructType({
 });
 
 // Path subgraph for source/target extraction algorithms
-export const PathSubgraph = StructType({
+export const GraphPathSubgraph = StructType({
     nodes: ArrayType(GraphNode),
     edges: ArrayType(GraphEdge),
     source_nodes: ArrayType(GraphNode),
@@ -295,28 +295,46 @@ export const PathSubgraph = StructType({
 });
 
 // Path subgraphs result
-export const PathSubgraphsResult = StructType({
-    subgraphs: ArrayType(PathSubgraph)
+export const GraphPathSubgraphsResult = StructType({
+    subgraphs: ArrayType(GraphPathSubgraph)
 });
 
 // Graph overview statistics result
-export const GraphOverviewStatistics = StructType({
+export const GraphTypeStatistics = StructType({
     // Basic counts
     node_count: IntegerType,
     edge_count: IntegerType,
-    
+
     // Types
     node_types: ArrayType(StringType),
     unique_node_types_count: IntegerType,
-    
-    // Structural metrics
-    max_depth: IntegerType,
     source_node_types: ArrayType(StringType),
     target_node_types: ArrayType(StringType),
-    average_degree: FloatType,
-    branching_factor: FloatType,
-    
+
     // Type aggregation details
     aggregate_nodes: ArrayType(GraphTypeAggregateNode),
     aggregate_edges: ArrayType(GraphTypeAggregateEdge)
 });
+
+
+// Graph path statistics result - comprehensive path analysis metrics
+export const GraphPathStatistics = StructType({
+    // Basic counts
+    node_count: IntegerType,
+    edge_count: IntegerType,
+
+    // Path depth metrics (longest dependency chain)
+    longest_path_length: IntegerType,      // Number of edges in longest simple path (dependency depth)
+    longest_path_depth: IntegerType,       // Number of levels in deepest path (1-based: root=1, child=2, etc.)
+    
+    // Graph connectivity metrics (reachability breadth)
+    total_reachable_nodes: FloatType,      // Maximum nodes reachable from any source (connectivity measure)
+    connectivity_span: IntegerType,        // Edges in spanning tree from most connected source
+    
+    // Structural metrics
+    branching_factor: FloatType,           // Average outgoing edges per node (complexity measure)
+
+    // Path signature (for pattern analysis)
+    node_type_sequence: ArrayType(StringType)  // Array of node types in traversal order from deepest path
+});
+

@@ -3,7 +3,7 @@ all: dag_aggregation_tests dag_flow_conservation_tests dag_time_aggregation_test
 
 # Aggregation tests
 .PHONY: dag_aggregation_tests
-dag_aggregation_tests: dag_aggregation_bottom_up_tests dag_aggregation_top_down_tests dag_aggregation_weighted_tests dag_aggregation_group_value_tests dag_aggregation_by_type_tests dag_aggregation_overview_statistics_tests
+dag_aggregation_tests: dag_aggregation_bottom_up_tests dag_aggregation_top_down_tests dag_aggregation_weighted_tests dag_aggregation_group_value_tests dag_aggregation_by_type_tests dag_aggregation_type_statistics_tests dag_aggregation_path_statistics_tests
 
 .PHONY: dag_aggregation_bottom_up_tests
 dag_aggregation_bottom_up_tests:
@@ -25,9 +25,13 @@ dag_aggregation_group_value_tests:
 dag_aggregation_by_type_tests:
 	edk template test -t ts --path src/dag/__tests/aggregation_by_type_tests.ts
 
-.PHONY: dag_aggregation_overview_statistics_tests
-dag_aggregation_overview_statistics_tests:
-	edk template test -t ts --path src/dag/__tests/aggregation_overview_statistics_tests.ts
+.PHONY: dag_aggregation_type_statistics_tests
+dag_aggregation_type_statistics_tests:
+	edk template test -t ts --path src/dag/__tests/aggregation_type_statistics_tests.ts
+
+.PHONY: dag_aggregation_path_statistics_tests
+dag_aggregation_path_statistics_tests:
+	edk template test -t ts --path src/dag/__tests/aggregation_path_statistics_tests.ts
 
 # Graph traversal tests
 .PHONY: dag_graph_traversal_tests

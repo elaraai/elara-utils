@@ -23,8 +23,8 @@ import { graph_connected_components } from "../flow_conservation";
 import {
   GraphNode,
   GraphEdge,
-  PathSubgraph,
-  PathSubgraphsResult,
+  GraphPathSubgraph,
+  GraphPathSubgraphsResult,
 } from "../types";
 
 /**
@@ -62,14 +62,14 @@ import {
  * @param edges - All edges in the full graph  
  * @param source_node_types - Node types to treat as start points (can be empty)
  * @param target_node_types - Node types to treat as endpoints (must have elements)
- * @returns PathSubgraphsResult containing subgraphs grouped by connected component
+ * @returns GraphPathSubgraphsResult containing subgraphs grouped by connected component
  */
 export const graph_subgraphs_from_targets = new Procedure("graph_subgraphs_from_targets")
   .input("nodes", ArrayType(GraphNode))
   .input("edges", ArrayType(GraphEdge))
   .input("source_node_types", SetType(StringType))
   .input("target_node_types", SetType(StringType))
-  .output(PathSubgraphsResult)
+  .output(GraphPathSubgraphsResult)
   .import(graph_build_adjacency_lists)
   .import(graph_connected_components)
   .body(($, { nodes, edges, source_node_types, target_node_types }, procs) => {
@@ -106,7 +106,7 @@ export const graph_subgraphs_from_targets = new Procedure("graph_subgraphs_from_
     $.if(Equal(Size(targetNodeIds), Const(0n))).then($ => {
       $.log(Const("No target nodes found - returning empty result"));
       $.return(Struct({
-        subgraphs: NewArray(PathSubgraph)
+        subgraphs: NewArray(GraphPathSubgraph)
       }));
     });
 
@@ -140,7 +140,7 @@ export const graph_subgraphs_from_targets = new Procedure("graph_subgraphs_from_
 
     // Create subgraphs for components that contain target nodes
     $.log(Const("Building subgraphs for components with target nodes..."));
-    const subgraphs = $.let(NewArray(PathSubgraph));
+    const subgraphs = $.let(NewArray(GraphPathSubgraph));
     const processedComponents = $.let(Const(0n));
 
     $.forArray(componentInfo, ($, component) => {

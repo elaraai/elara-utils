@@ -29,6 +29,8 @@ Value aggregation and rollup operations across graph structures:
 - `weighted_aggregation.ts` - Aggregates values using node weights from leaf nodes upward, computing weighted sums, averages, and total weights
 - `group_value_rollup.ts` - Aggregates multi-attribute dictionary values from leaf nodes upward, summing each dictionary key independently across the dependency tree
 - `aggregation_by_type.ts` - Groups nodes by type and analyzes type-to-type transitions to create aggregate graph structure with transition probabilities
+- `type_statistics.ts` - Fast type-based analysis providing node type patterns, source/target identification, and type transition probabilities without expensive traversal
+- `path_statistics.ts` - Comprehensive path analysis using graph traversal to calculate path depth, branching factors, and type sequence patterns for workflow complexity assessment
 - `index.ts` - Exports all aggregation procedures
 
 #### Flow Conservation (`src/dag/flow_conservation/`)

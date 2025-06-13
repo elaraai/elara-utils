@@ -471,3 +471,73 @@ export const MyNode = StructType({
     // ... other fields
 });
 ```
+
+## Graph Statistics Procedures
+
+### Type vs Path Statistics
+
+The DAG library provides two complementary approaches to graph analysis:
+
+#### **Type Statistics** (`graph_type_statistics`)
+- **Purpose**: Fast type-based analysis without expensive traversal
+- **Complexity**: O(N + E) - single pass through nodes and edges
+- **Use Cases**: 
+  - Quick graph profiling: "What types of operations are present?"
+  - Interface identification: "What are the entry and exit points?"
+  - Type distribution analysis: "How many nodes of each type?"
+
+```typescript
+import { graph_type_statistics } from "./aggregation/type_statistics";
+
+const typeStats = graph_type_statistics({ nodes, edges });
+// Returns: node_count, edge_count, node_types, source_node_types, 
+//          target_node_types, unique_node_types_count, aggregate_nodes, aggregate_edges
+```
+
+#### **Path Statistics** (`graph_path_statistics`)
+- **Purpose**: Comprehensive path analysis using graph traversal
+- **Complexity**: O(V + E) per source node - uses BFS traversal
+- **Use Cases**:
+  - Process flow analysis: "What's the longest execution path?"
+  - Complexity assessment: "How deep and branched is this workflow?"
+  - Pattern recognition: "What are the typical operation sequences?"
+
+```typescript
+import { graph_path_statistics } from "./aggregation/path_statistics";
+
+const pathStats = graph_path_statistics({ nodes, edges });
+// Returns: node_count, edge_count, path_length, max_depth, 
+//          branching_factor, node_type_sequence
+```
+
+### When to Use Which
+
+**Use Type Statistics when:**
+- You need quick insights about graph structure
+- Performance is critical (large graphs)
+- You're analyzing type patterns and distributions
+- You don't need detailed path information
+
+**Use Path Statistics when:**
+- You need to understand actual execution flows
+- Path depth and complexity matter for your analysis
+- You're looking for bottlenecks or critical paths
+- You need pattern signatures for workflow classification
+
+### Example: Workflow Analysis Pipeline
+
+```typescript
+// Quick assessment first
+const typeStats = graph_type_statistics({ nodes, edges });
+console.log(`Graph has ${typeStats.unique_node_types_count} types`);
+console.log(`Sources: ${typeStats.source_node_types}, Targets: ${typeStats.target_node_types}`);
+
+// Detailed analysis if needed
+if (typeStats.node_count > 100) {
+  console.log("Large graph detected, skipping detailed path analysis");
+} else {
+  const pathStats = graph_path_statistics({ nodes, edges });
+  console.log(`Max depth: ${pathStats.max_depth}, Complexity: ${pathStats.branching_factor}`);
+  console.log(`Typical flow: ${pathStats.node_type_sequence.join(" → ")}`);
+}
+```

@@ -23,8 +23,8 @@ import { graph_connected_components } from "../flow_conservation";
 import {
   GraphNode,
   GraphEdge,
-  PathSubgraph,
-  PathSubgraphsResult,
+  GraphPathSubgraph,
+  GraphPathSubgraphsResult,
 } from "../types";
 
 /**
@@ -85,14 +85,14 @@ import {
  * @param edges - All edges in the full graph
  * @param source_node_types - Node types to treat as workflow entry points (must contain at least one type)
  * @param target_node_types - Node types to treat as workflow endpoints (can be empty set)
- * @returns PathSubgraphsResult containing one subgraph per connected component that has source nodes
+ * @returns GraphPathSubgraphsResult containing one subgraph per connected component that has source nodes
  */
 export const graph_subgraphs_from_sources = new Procedure("graph_subgraphs_from_sources")
   .input("nodes", ArrayType(GraphNode))
   .input("edges", ArrayType(GraphEdge))
   .input("source_node_types", SetType(StringType))
   .input("target_node_types", SetType(StringType))
-  .output(PathSubgraphsResult)
+  .output(GraphPathSubgraphsResult)
   .import(graph_build_adjacency_lists)
   .import(graph_connected_components)
   .body(($, { nodes, edges, source_node_types, target_node_types }, procs) => {
@@ -129,7 +129,7 @@ export const graph_subgraphs_from_sources = new Procedure("graph_subgraphs_from_
     $.if(Equal(Size(sourceNodeIds), Const(0n))).then($ => {
       $.log(Const("No source nodes found - returning empty result"));
       $.return(Struct({
-        subgraphs: NewArray(PathSubgraph)
+        subgraphs: NewArray(GraphPathSubgraph)
       }));
     });
 
@@ -298,7 +298,7 @@ export const graph_subgraphs_from_sources = new Procedure("graph_subgraphs_from_
 
     // Convert component subgraphs to final result array
     $.log(Const("Converting to final subgraph array..."));
-    const subgraphs = $.let(NewArray(PathSubgraph));
+    const subgraphs = $.let(NewArray(GraphPathSubgraph));
     
     $.forDict(componentSubgraphs, ($, subgraphData, _componentId) => {
       const subgraph = $.let(Struct({

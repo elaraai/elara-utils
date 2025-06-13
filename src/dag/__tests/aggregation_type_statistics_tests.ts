@@ -1,12 +1,12 @@
 import { UnitTestBuilder } from "@elaraai/core";
 import { Template } from "@elaraai/core";
-import { graph_overview_statistics } from "../aggregation/overview_statistics";
+import { graph_type_statistics } from "../aggregation/type_statistics";
 
-// === GRAPH OVERVIEW STATISTICS TESTS ===
+// === GRAPH TYPE STATISTICS TESTS ===
 
-// Basic overview statistics test - simple graph with multiple types
-const overview_statistics_basic_test = new UnitTestBuilder("overview_statistics_basic")
-  .procedure(graph_overview_statistics)
+// Basic type statistics test - simple graph with multiple types
+const type_statistics_basic_test = new UnitTestBuilder("type_statistics_basic")
+  .procedure(graph_type_statistics)
   .test(
     {
       nodes: [
@@ -27,11 +27,8 @@ const overview_statistics_basic_test = new UnitTestBuilder("overview_statistics_
       edge_count: 4n,
       node_types: ["input", "output", "process"], // Should be sorted by type
       unique_node_types_count: 3n,
-      max_depth: 1n, // Simple approach: always 1 when we have nodes
       source_node_types: ["input"],
       target_node_types: ["output"],
-      average_degree: 2.0, // (4*2)/4 = 2.0
-      branching_factor: 1.0, // Simple approach: 1.0 when we have edges
       aggregate_nodes: [
         { type: "input", node_count: 1n },
         { type: "output", node_count: 1n },
@@ -44,9 +41,9 @@ const overview_statistics_basic_test = new UnitTestBuilder("overview_statistics_
     }
   );
 
-// Complex overview statistics test - multiple sources, targets, and complex structure
-const overview_statistics_complex_test = new UnitTestBuilder("overview_statistics_complex")
-  .procedure(graph_overview_statistics)
+// Complex type statistics test - multiple sources, targets, and complex structure
+const type_statistics_complex_test = new UnitTestBuilder("type_statistics_complex")
+  .procedure(graph_type_statistics)
   .test(
     {
       nodes: [
@@ -74,11 +71,8 @@ const overview_statistics_complex_test = new UnitTestBuilder("overview_statistic
       edge_count: 8n,
       node_types: ["processor", "source", "terminal"], // Should be sorted by type
       unique_node_types_count: 3n,
-      max_depth: 1n, // Simple approach: always 1 when we have nodes
       source_node_types: ["source"],
       target_node_types: ["terminal"],
-      average_degree: 2.2857142857142856, // (8*2)/7 = 16/7
-      branching_factor: 1.0, // Simple approach: 1.0 when we have edges
       aggregate_nodes: [
         { type: "processor", node_count: 3n },
         { type: "source", node_count: 2n },
@@ -92,8 +86,8 @@ const overview_statistics_complex_test = new UnitTestBuilder("overview_statistic
   );
 
 // Single node test - edge case
-const overview_statistics_single_node_test = new UnitTestBuilder("overview_statistics_single_node")
-  .procedure(graph_overview_statistics)
+const type_statistics_single_node_test = new UnitTestBuilder("type_statistics_single_node")
+  .procedure(graph_type_statistics)
   .test(
     {
       nodes: [
@@ -104,21 +98,18 @@ const overview_statistics_single_node_test = new UnitTestBuilder("overview_stati
     {
       node_count: 1n,
       edge_count: 0n,
-      node_types: [], // No types participate in edges
-      unique_node_types_count: 0n,
-      max_depth: 1n, // Single isolated node still has depth 1
-      source_node_types: [],
-      target_node_types: [],
-      average_degree: 0.0,
-      branching_factor: 0.0,
+      node_types: ["isolated"], // Node type exists but no edges
+      unique_node_types_count: 1n,
+      source_node_types: ["isolated"], // No incoming edges
+      target_node_types: ["isolated"], // No outgoing edges
       aggregate_nodes: [], // Empty because no edges
       aggregate_edges: []
     }
   );
 
 // Empty graph test - edge case
-const overview_statistics_empty_test = new UnitTestBuilder("overview_statistics_empty")
-  .procedure(graph_overview_statistics)
+const type_statistics_empty_test = new UnitTestBuilder("type_statistics_empty")
+  .procedure(graph_type_statistics)
   .test(
     {
       nodes: [],
@@ -129,19 +120,16 @@ const overview_statistics_empty_test = new UnitTestBuilder("overview_statistics_
       edge_count: 0n,
       node_types: [],
       unique_node_types_count: 0n,
-      max_depth: 0n,
       source_node_types: [],
       target_node_types: [],
-      average_degree: 0.0,
-      branching_factor: 0.0,
       aggregate_nodes: [],
       aggregate_edges: []
     }
   );
 
 // Self-loop test - node connects to itself
-const overview_statistics_self_loop_test = new UnitTestBuilder("overview_statistics_self_loop")
-  .procedure(graph_overview_statistics)
+const type_statistics_self_loop_test = new UnitTestBuilder("type_statistics_self_loop")
+  .procedure(graph_type_statistics)
   .test(
     {
       nodes: [
@@ -158,11 +146,8 @@ const overview_statistics_self_loop_test = new UnitTestBuilder("overview_statist
       edge_count: 2n,
       node_types: ["input", "recursive"],
       unique_node_types_count: 2n,
-      max_depth: 1n, // Simple approach: always 1 when we have nodes
       source_node_types: ["input"],
       target_node_types: [], // recursive type has outgoing edges (self-loop)
-      average_degree: 2.0, // (2*2)/2 = 2.0
-      branching_factor: 1.0, // 2 edges / 2 nodes with outgoing = 1.0
       aggregate_nodes: [
         { type: "input", node_count: 1n },
         { type: "recursive", node_count: 1n }
@@ -175,9 +160,9 @@ const overview_statistics_self_loop_test = new UnitTestBuilder("overview_statist
   );
 
 export default Template(
-  overview_statistics_basic_test,
-  overview_statistics_complex_test,
-  overview_statistics_single_node_test,
-  overview_statistics_empty_test,
-  overview_statistics_self_loop_test
+  type_statistics_basic_test,
+  type_statistics_complex_test,
+  type_statistics_single_node_test,
+  type_statistics_empty_test,
+  type_statistics_self_loop_test
 );
