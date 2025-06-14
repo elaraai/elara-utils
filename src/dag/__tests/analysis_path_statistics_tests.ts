@@ -1,6 +1,6 @@
 import { UnitTestBuilder } from "@elaraai/core";
 import { Template } from "@elaraai/core";
-import { graph_path_statistics } from "../aggregation/path_statistics";
+import { graph_path_statistics } from "../analysis/path_statistics";
 
 // === GRAPH PATH STATISTICS TESTS ===
 

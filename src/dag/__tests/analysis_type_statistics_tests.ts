@@ -1,6 +1,6 @@
 import { UnitTestBuilder } from "@elaraai/core";
 import { Template } from "@elaraai/core";
-import { graph_type_statistics } from "../aggregation/type_statistics";
+import { graph_type_statistics } from "../analysis/type_statistics";
 
 // === GRAPH TYPE STATISTICS TESTS ===
 

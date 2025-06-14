@@ -12,7 +12,7 @@ import {
 import { ArrayType, StringType } from "@elaraai/core";
 
 import { graph_aggregation_by_type } from "./type_aggregation";
-import { graph_build_adjacency_lists } from "../core/build_adjacency_lists";
+import { graph_build_adjacency_lists } from "../core/adjacency_lists";
 import {
   GraphNode,
   GraphEdge,

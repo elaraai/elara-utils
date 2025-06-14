@@ -22,56 +22,64 @@ Directed Acyclic Graph utilities for data flow analysis and processing. The DAG 
 
 - **Core Modules:**
 
-#### Data Aggregation (`src/dag/aggregation/`)
-Value aggregation and rollup operations across graph structures:
-- `bottom_up_aggregation.ts` - Aggregates node values from leaf nodes upward through dependency tree to calculate total value impact including all descendants
-- `top_down_aggregation.ts` - Distributes values from parent nodes downward through dependency tree, sharing parent resources equally among direct children  
-- `weighted_aggregation.ts` - Aggregates values using node weights from leaf nodes upward, computing weighted sums, averages, and total weights
-- `group_value_rollup.ts` - Aggregates multi-attribute dictionary values from leaf nodes upward, summing each dictionary key independently across the dependency tree
-- `aggregation_by_type.ts` - Groups nodes by type and analyzes type-to-type transitions to create aggregate graph structure with transition probabilities
-- `type_statistics.ts` - Fast type-based analysis providing node type patterns, source/target identification, and type transition probabilities without expensive traversal
-- `path_statistics.ts` - Comprehensive path analysis using graph traversal to calculate path depth, branching factors, and type sequence patterns for workflow complexity assessment
-- `index.ts` - Exports all aggregation procedures
+#### Core Infrastructure (`src/dag/core/`)
+Fundamental graph operations and validation:
+- `adjacency_lists.ts` - Builds both forward and reverse adjacency list representations from graph edges, used by most other graph algorithms
+- `validation.ts` - Validates graph structure and identifies issues including orphaned nodes, dangling edges, duplicate nodes, and duplicate edges
+- `index.ts` - Exports all core procedures
 
-#### Flow Conservation (`src/dag/flow_conservation/`)
-Network flow analysis and connectivity validation:
-- `flow_conservation.ts` - Verifies conservation of flow through network, checking if flow is conserved at each node considering transmission losses
-- `dynamic_reachability.ts` - Analyzes graph reachability considering only active edges, computing ancestors and descendants via active connections only
-- `connected_components.ts` - Identifies connected components in an undirected graph representation using optimized O(V + E) algorithm with unique component IDs
-- `index.ts` - Exports all flow conservation procedures
-
-#### Graph Traversal (`src/dag/graph_traversal/`) 
+#### Graph Traversal (`src/dag/traversal/`) 
 Core graph traversal algorithms and analysis:
-- `bfs.ts` - Performs breadth-first search traversal visiting nodes level by level from the starting node using queue-based exploration
-- `dfs.ts` - Performs depth-first search traversal exploring as far as possible along each branch before backtracking using stack-based exploration
+- `breadth_first.ts` - Performs breadth-first search traversal visiting nodes level by level from the starting node using queue-based exploration
+- `depth_first.ts` - Performs depth-first search traversal exploring as far as possible along each branch before backtracking using stack-based exploration
 - `enhanced_traversal.ts` - Performs BFS or DFS with detailed tracking of depth, order, and parent relationships for spanning tree construction
 - `topological_sort.ts` - Orders nodes such that for every edge (A→B), A comes before B, essential for dependency-based task scheduling
 - `cycle_detection.ts` - Detects if the graph contains any cycles and identifies the nodes involved using DFS with state tracking
 - `ancestor_descendant.ts` - Identifies all ancestors, descendants, and reachable nodes for each node through transitive closure computation
 - `index.ts` - Exports all graph traversal procedures
 
-#### Path Analysis (`src/dag/path_analysis/`)
+#### Connectivity Analysis (`src/dag/connectivity/`)
+Network connectivity and component analysis:
+- `connected_components.ts` - Identifies connected components in an undirected graph representation using optimized O(V + E) algorithm with unique component IDs
+- `dynamic_reachability.ts` - Analyzes graph reachability considering only active edges, computing ancestors and descendants via active connections only
+- `bridge_analysis.ts` - Identifies critical nodes whose removal would increase the number of connected components
+- `index.ts` - Exports all connectivity procedures
+
+#### Path Analysis (`src/dag/paths/`)
 Advanced path finding and subgraph extraction:
 - `all_paths.ts` - Finds all possible paths between two nodes in a directed graph using DFS with backtracking for exhaustive path enumeration
 - `path_membership.ts` - Determines which paths each node belongs to by analyzing participation across all possible routes between start and end
 - `shortest_path.ts` - Finds the path with minimum total weight from start to end node using Dijkstra's algorithm for weighted graphs
 - `critical_path.ts` - Identifies the longest path through a project network to determine project duration and critical tasks for scheduling
-- `subgraphs.ts` - **Optimized O(V + E)** - Extracts subgraphs by connected components with optional node type filtering, with dramatic performance improvements for large graphs
-- `all_paths_to_targets.ts` - Finds all paths from any sources to specific target nodes using forward traversal
+- `subgraph_extraction.ts` - **Optimized O(V + E)** - Extracts subgraphs by connected components with optional node type filtering, with dramatic performance improvements for large graphs
 - `index.ts` - Exports all path analysis procedures
 
-#### Shared Utilities (`src/dag/shared_utils/`)
-Common utilities and validation functions:
-- `build_adjacency_lists.ts` - Builds both forward and reverse adjacency list representations from graph edges, used by most other graph algorithms
-- `adjacency_dict_operations.ts` - Dictionary operations for adjacency list manipulation and queries
-- `graph_validate.ts` - Validates graph structure and identifies issues including orphaned nodes, dangling edges, duplicate nodes, and duplicate edges
-- `index.ts` - Exports all shared utility procedures
+#### Data Aggregation (`src/dag/aggregation/`)
+Value aggregation and rollup operations across graph structures:
+- `bottom_up.ts` - Aggregates node values from leaf nodes upward through dependency tree to calculate total value impact including all descendants
+- `top_down.ts` - Distributes values from parent nodes downward through dependency tree, sharing parent resources equally among direct children  
+- `weighted.ts` - Aggregates values using node weights from leaf nodes upward, computing weighted sums, averages, and total weights
+- `group_values.ts` - Aggregates multi-attribute dictionary values from leaf nodes upward, summing each dictionary key independently across the dependency tree
+- `temporal_bottom_up.ts` - Aggregates task durations from leaf nodes upward through dependency tree to calculate total time impact including all descendants
+- `temporal_top_down.ts` - Aggregates task durations from root nodes downward through dependency tree to calculate total prerequisite work needed
+- `type_aggregation.ts` - Groups nodes by type and analyzes type-to-type transitions to create aggregate graph structure with transition probabilities
+- `type_statistics.ts` - Fast type-based analysis providing node type patterns, source/target identification, and type transition probabilities without expensive traversal
+- `path_statistics.ts` - Comprehensive path analysis using graph traversal to calculate path depth, branching factors, and type sequence patterns for workflow complexity assessment
+- `index.ts` - Exports all aggregation procedures
 
-#### Time Aggregation (`src/dag/time_aggregation/`)
-Temporal analysis and duration calculations:
-- `temporal_bottom_up_aggregation.ts` - Aggregates task durations from leaf nodes upward through dependency tree to calculate total time impact including all descendants
-- `temporal_top_down_aggregation.ts` - Aggregates task durations from root nodes downward through dependency tree to calculate total prerequisite work needed
-- `index.ts` - Exports all time aggregation procedures
+#### Analysis and Validation (`src/dag/analysis/`)
+Specialized analysis procedures for graph patterns and completeness:
+- `missing_transitions.ts` - Identifies expected node type transitions that are absent from the graph
+- `workflow_completeness.ts` - Validates end-to-end workflow patterns and completeness
+- `type_aggregation.ts` - Groups nodes by type and analyzes type-to-type transitions
+- `type_statistics.ts` - Fast type-based analysis without expensive traversal
+- `path_statistics.ts` - Comprehensive path analysis using graph traversal
+- `index.ts` - Exports all analysis procedures
+
+#### Flow Processing (`src/dag/flow/`)
+Network flow analysis and conservation validation:
+- `flow_conservation.ts` - Verifies conservation of flow through network, checking if flow is conserved at each node considering transmission losses
+- `index.ts` - Exports all flow procedures
 
 #### Core Types and Tests
 - `types.ts` - TypeScript type definitions for all DAG structures and interfaces
@@ -114,33 +122,33 @@ This repository is designed to accommodate additional utility themes as they are
 ```typescript
 import { Procedure } from "@elaraai/core";
 import { 
-  graph_bottom_up_aggregation 
+  graph_aggregation_bottom_up 
 } from "elara-utils/src/dag/aggregation";
 import { 
   graph_bfs,
   graph_connected_components
-} from "elara-utils/src/dag/graph_traversal";
+} from "elara-utils/src/dag/traversal";
 import { 
-  graph_subgraphs
-} from "elara-utils/src/dag/path_analysis";
+  graph_subgraph_extraction
+} from "elara-utils/src/dag/paths";
 import { 
   graph_validate 
-} from "elara-utils/src/dag/shared_utils";
+} from "elara-utils/src/dag/core";
 
 // Use the DAG utilities in your EDK procedures
 const myAnalysisProcedure = new Procedure("my_analysis")
   .input("nodes", ArrayType(GraphNode))
   .input("edges", ArrayType(GraphEdge))
   .input("source_types", SetType(StringType))
-  .output(PathSubgraphsResult)
-  .import(graph_subgraphs_from_sources)
+  .output(SubgraphExtractionResult)
+  .import(graph_subgraph_extraction)
   .import(graph_validate)
   .body(($, { nodes, edges, source_types }, procs) => {
     // Validate graph structure first
     const validation = $.let(procs.graph_validate(Struct({ nodes, edges })));
     
     // Extract subgraphs with optional filtering
-    const result = $.let(procs.graph_subgraphs(Struct({ 
+    const result = $.let(procs.graph_subgraph_extraction(Struct({ 
       nodes, 
       edges, 
       filter_by_types: source_types
