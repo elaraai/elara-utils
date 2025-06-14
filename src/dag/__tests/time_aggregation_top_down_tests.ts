@@ -1,6 +1,6 @@
 import { UnitTestBuilder } from "@elaraai/core";
 import { Template } from "@elaraai/core";
-import { graph_temporal_top_down_aggregation } from "../time_aggregation/temporal_top_down_aggregation";
+import { graph_temporal_top_down_aggregation } from "../aggregation/temporal_top_down";
 
 // Basic top-down temporal aggregation test
 const temporal_top_down_basic_test = new UnitTestBuilder("temporal_top_down_basic")

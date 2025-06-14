@@ -1,6 +1,6 @@
 import { UnitTestBuilder } from "@elaraai/core";
 import { Template } from "@elaraai/core";
-import { graph_weighted_aggregation } from "../aggregation/weighted_aggregation";
+import { graph_weighted_aggregation } from "../aggregation/weighted";
 
 // === WEIGHTED AGGREGATION TESTS ===
 

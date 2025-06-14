@@ -1,7 +1,7 @@
 import { UnitTestBuilder } from "@elaraai/core";
 import { Template } from "@elaraai/core";
 
-import { graph_cycle_detection } from "../graph_traversal/cycle_detection";
+import { graph_cycle_detection } from "../traversal/cycle_detection";
 
 // === CYCLE DETECTION TESTS ===
 

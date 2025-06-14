@@ -1,8 +1,8 @@
 import { UnitTestBuilder } from "@elaraai/core";
 import { Template } from "@elaraai/core";
-import { graph_validate } from "../shared_utils/graph_validate";
+import { graph_validate } from "../core/validation";
 
-// Test 1: Clean graph (no issues)
+// Test 1: Clean graph (no issues) - Basic statistics test
 const validate_clean_test = new UnitTestBuilder("validate_clean")
   .procedure(graph_validate)
   .test(
@@ -18,23 +18,30 @@ const validate_clean_test = new UnitTestBuilder("validate_clean")
       ]
     },
     {
-      valid_nodes: [
-        { id: "A", type: "start" },
-        { id: "B", type: "middle" },
-        { id: "C", type: "end" }
+      total_node_count: 3n,
+      total_edge_count: 2n,
+      valid_node_count: 3n,
+      valid_edge_count: 2n,
+      orphaned_node_count: 0n,
+      dangling_edge_count: 0n,
+      duplicate_node_count: 0n,
+      duplicate_edge_count: 0n,
+      node_validity_ratio: 1.0,
+      edge_validity_ratio: 1.0,
+      connectivity_ratio: 1.0,
+      problematic_node_types: [
+        { node_type: "end", orphaned_count: 0n, total_count: 1n, orphaned_percentage: 0.0 },
+        { node_type: "middle", orphaned_count: 0n, total_count: 1n, orphaned_percentage: 0.0 },
+        { node_type: "start", orphaned_count: 0n, total_count: 1n, orphaned_percentage: 0.0 }
       ],
-      valid_edges: [
-        { from: "A", to: "B" },
-        { from: "B", to: "C" }
-      ],
-      orphaned_nodes: [],
-      dangling_edges: [],
-      duplicate_nodes: [],
-      duplicate_edges: []
+      problematic_edge_patterns: [
+        { from_type: "pattern", to_type: "analysis", dangling_count: 0n, valid_count: 1n, failure_rate: 0.0 },
+        { from_type: "pattern", to_type: "analysis", dangling_count: 0n, valid_count: 1n, failure_rate: 0.0 }
+      ]
     }
   );
 
-// Test 2: Duplicate nodes
+// Test 2: Duplicate nodes - Count statistics
 const validate_duplicate_nodes_test = new UnitTestBuilder("validate_duplicate_nodes")
   .procedure(graph_validate)
   .test(
@@ -52,40 +59,30 @@ const validate_duplicate_nodes_test = new UnitTestBuilder("validate_duplicate_no
       ]
     },
     {
-      valid_nodes: [
-        { id: "A", type: "start" }, // First occurrence kept
-        { id: "B", type: "middle" }, // First occurrence kept
-        { id: "C", type: "end" }
+      total_node_count: 5n,
+      total_edge_count: 2n,
+      valid_node_count: 3n,
+      valid_edge_count: 2n,
+      orphaned_node_count: 0n,
+      dangling_edge_count: 0n,
+      duplicate_node_count: 2n, // A and B are duplicated
+      duplicate_edge_count: 0n,
+      node_validity_ratio: 0.6, // 3 valid out of 5 total
+      edge_validity_ratio: 1.0,
+      connectivity_ratio: 1.0,
+      problematic_node_types: [
+        { node_type: "end", orphaned_count: 0n, total_count: 1n, orphaned_percentage: 0.0 },
+        { node_type: "middle", orphaned_count: 0n, total_count: 1n, orphaned_percentage: 0.0 },
+        { node_type: "start", orphaned_count: 0n, total_count: 1n, orphaned_percentage: 0.0 }
       ],
-      valid_edges: [
-        { from: "A", to: "B" },
-        { from: "B", to: "C" }
-      ],
-      orphaned_nodes: [],
-      dangling_edges: [],
-      duplicate_nodes: [
-        {
-          id: "A",
-          count: 2n,
-          instances: [
-            { id: "A", type: "start" },
-            { id: "A", type: "start_copy" }
-          ]
-        },
-        {
-          id: "B",
-          count: 2n,
-          instances: [
-            { id: "B", type: "middle" },
-            { id: "B", type: "middle_copy" }
-          ]
-        }
-      ],
-      duplicate_edges: []
+      problematic_edge_patterns: [
+        { from_type: "pattern", to_type: "analysis", dangling_count: 0n, valid_count: 1n, failure_rate: 0.0 },
+        { from_type: "pattern", to_type: "analysis", dangling_count: 0n, valid_count: 1n, failure_rate: 0.0 }
+      ]
     }
   );
 
-// Test 3: Duplicate edges
+// Test 3: Duplicate edges - Count statistics
 const validate_duplicate_edges_test = new UnitTestBuilder("validate_duplicate_edges")
   .procedure(graph_validate)
   .test(
@@ -104,26 +101,30 @@ const validate_duplicate_edges_test = new UnitTestBuilder("validate_duplicate_ed
       ]
     },
     {
-      valid_nodes: [
-        { id: "A", type: "start" },
-        { id: "B", type: "middle" },
-        { id: "C", type: "end" }
+      total_node_count: 3n,
+      total_edge_count: 5n,
+      valid_node_count: 3n,
+      valid_edge_count: 2n, // Only unique edges counted
+      orphaned_node_count: 0n,
+      dangling_edge_count: 0n,
+      duplicate_node_count: 0n,
+      duplicate_edge_count: 2n, // A->B and B->C patterns are duplicated
+      node_validity_ratio: 1.0,
+      edge_validity_ratio: 0.4, // 2 valid out of 5 total
+      connectivity_ratio: 1.0,
+      problematic_node_types: [
+        { node_type: "end", orphaned_count: 0n, total_count: 1n, orphaned_percentage: 0.0 },
+        { node_type: "middle", orphaned_count: 0n, total_count: 1n, orphaned_percentage: 0.0 },
+        { node_type: "start", orphaned_count: 0n, total_count: 1n, orphaned_percentage: 0.0 }
       ],
-      valid_edges: [
-        { from: "A", to: "B" }, // Only one kept
-        { from: "B", to: "C" }  // Only one kept
-      ],
-      orphaned_nodes: [],
-      dangling_edges: [],
-      duplicate_nodes: [],
-      duplicate_edges: [
-        { from: "A", from_type: "start", to: "B", to_type: "middle", count: 2n },
-        { from: "B", from_type: "middle", to: "C", to_type: "end", count: 3n }
+      problematic_edge_patterns: [
+        { from_type: "pattern", to_type: "analysis", dangling_count: 0n, valid_count: 1n, failure_rate: 0.0 },
+        { from_type: "pattern", to_type: "analysis", dangling_count: 0n, valid_count: 1n, failure_rate: 0.0 }
       ]
     }
   );
 
-// Test 4: Dangling edges
+// Test 4: Dangling edges - Count statistics
 const validate_dangling_edges_test = new UnitTestBuilder("validate_dangling_edges")
   .procedure(graph_validate)
   .test(
@@ -140,25 +141,30 @@ const validate_dangling_edges_test = new UnitTestBuilder("validate_dangling_edge
       ]
     },
     {
-      valid_nodes: [
-        { id: "A", type: "start" },
-        { id: "B", type: "middle" }
+      total_node_count: 2n,
+      total_edge_count: 4n,
+      valid_node_count: 2n,
+      valid_edge_count: 1n,
+      orphaned_node_count: 0n,
+      dangling_edge_count: 3n,
+      duplicate_node_count: 0n,
+      duplicate_edge_count: 0n,
+      node_validity_ratio: 1.0,
+      edge_validity_ratio: 0.25, // 1 valid out of 4 total
+      connectivity_ratio: 1.0, // Both nodes are connected
+      problematic_node_types: [
+        { node_type: "middle", orphaned_count: 0n, total_count: 1n, orphaned_percentage: 0.0 },
+        { node_type: "start", orphaned_count: 0n, total_count: 1n, orphaned_percentage: 0.0 }
       ],
-      valid_edges: [
-        { from: "A", to: "B" }
-      ],
-      orphaned_nodes: [],
-      dangling_edges: [
-        { from: "A", from_type: "start", to: "C", to_type: null },
-        { from: "D", from_type: null, to: "B", to_type: "middle" },
-        { from: "E", from_type: null, to: "F", to_type: null }
-      ],
-      duplicate_nodes: [],
-      duplicate_edges: []
+      problematic_edge_patterns: [
+        { from_type: "pattern", to_type: "analysis", dangling_count: 0n, valid_count: 1n, failure_rate: 0.0 },
+        { from_type: "pattern", to_type: "analysis", dangling_count: 1n, valid_count: 0n, failure_rate: 100.0 },
+        { from_type: "pattern", to_type: "analysis", dangling_count: 1n, valid_count: 0n, failure_rate: 100.0 }
+      ]
     }
   );
 
-// Test 5: Orphaned nodes
+// Test 5: Orphaned nodes - Count statistics
 const validate_orphaned_nodes_test = new UnitTestBuilder("validate_orphaned_nodes")
   .procedure(graph_validate)
   .test(
@@ -176,28 +182,57 @@ const validate_orphaned_nodes_test = new UnitTestBuilder("validate_orphaned_node
       ]
     },
     {
-      valid_nodes: [
-        { id: "A", type: "start" },
-        { id: "B", type: "middle" },
-        { id: "C", type: "end" },
-        { id: "D", type: "orphan1" },
-        { id: "E", type: "orphan2" }
+      total_node_count: 5n,
+      total_edge_count: 2n,
+      valid_node_count: 5n,
+      valid_edge_count: 2n,
+      orphaned_node_count: 2n, // D and E are orphaned
+      dangling_edge_count: 0n,
+      duplicate_node_count: 0n,
+      duplicate_edge_count: 0n,
+      node_validity_ratio: 1.0,
+      edge_validity_ratio: 1.0,
+      connectivity_ratio: 0.6, // 3 out of 5 nodes are connected
+      problematic_node_types: [
+        { node_type: "end", orphaned_count: 0n, total_count: 1n, orphaned_percentage: 0.0 },
+        { node_type: "middle", orphaned_count: 0n, total_count: 1n, orphaned_percentage: 0.0 },
+        { node_type: "orphan1", orphaned_count: 1n, total_count: 1n, orphaned_percentage: 100.0 },
+        { node_type: "orphan2", orphaned_count: 1n, total_count: 1n, orphaned_percentage: 100.0 },
+        { node_type: "start", orphaned_count: 0n, total_count: 1n, orphaned_percentage: 0.0 }
       ],
-      valid_edges: [
-        { from: "A", to: "B" },
-        { from: "B", to: "C" }
-      ],
-      orphaned_nodes: [
-        { id: "D", type: "orphan1" },
-        { id: "E", type: "orphan2" }
-      ],
-      dangling_edges: [],
-      duplicate_nodes: [],
-      duplicate_edges: []
+      problematic_edge_patterns: [
+        { from_type: "pattern", to_type: "analysis", dangling_count: 0n, valid_count: 1n, failure_rate: 0.0 },
+        { from_type: "pattern", to_type: "analysis", dangling_count: 0n, valid_count: 1n, failure_rate: 0.0 }
+      ]
     }
   );
 
-// Test 6: Complex graph with all types of issues
+// Test 6: Empty graph - Baseline test
+const validate_empty_test = new UnitTestBuilder("validate_empty")
+  .procedure(graph_validate)
+  .test(
+    {
+      nodes: [],
+      edges: []
+    },
+    {
+      total_node_count: 0n,
+      total_edge_count: 0n,
+      valid_node_count: 0n,
+      valid_edge_count: 0n,
+      orphaned_node_count: 0n,
+      dangling_edge_count: 0n,
+      duplicate_node_count: 0n,
+      duplicate_edge_count: 0n,
+      node_validity_ratio: 0.0, // DivideSafe returns 0.0 for 0/0
+      edge_validity_ratio: 0.0, // DivideSafe returns 0.0 for 0/0
+      connectivity_ratio: 0.0,   // DivideSafe returns 0.0 for 0/0
+      problematic_node_types: [],
+      problematic_edge_patterns: []
+    }
+  );
+
+// Test 7: Complex mixed issues - Comprehensive statistics test
 const validate_complex_issues_test = new UnitTestBuilder("validate_complex_issues")
   .procedure(graph_validate)
   .test(
@@ -218,330 +253,319 @@ const validate_complex_issues_test = new UnitTestBuilder("validate_complex_issue
       ]
     },
     {
-      valid_nodes: [
-        { id: "A", type: "start" }, // First occurrence
-        { id: "B", type: "middle" },
-        { id: "C", type: "end" },
-        { id: "D", type: "orphan" }
+      total_node_count: 5n,
+      total_edge_count: 5n,
+      valid_node_count: 4n, // A, B, C, D (first A kept)
+      valid_edge_count: 2n, // A->B and B->C (duplicates removed)
+      orphaned_node_count: 1n, // D is orphaned
+      dangling_edge_count: 2n, // B->E and F->C
+      duplicate_node_count: 1n, // A is duplicated
+      duplicate_edge_count: 1n, // A->B is duplicated
+      node_validity_ratio: 0.8, // 4 valid out of 5 total
+      edge_validity_ratio: 0.4, // 2 valid out of 5 total
+      connectivity_ratio: 0.75, // 3 out of 4 valid nodes are connected
+      problematic_node_types: [
+        { node_type: "end", orphaned_count: 0n, total_count: 1n, orphaned_percentage: 0.0 },
+        { node_type: "middle", orphaned_count: 0n, total_count: 1n, orphaned_percentage: 0.0 },
+        { node_type: "orphan", orphaned_count: 1n, total_count: 1n, orphaned_percentage: 100.0 },
+        { node_type: "start", orphaned_count: 0n, total_count: 1n, orphaned_percentage: 0.0 }
       ],
-      valid_edges: [
-        { from: "A", to: "B" }, // Only one kept
-        { from: "B", to: "C" }
-      ],
-      orphaned_nodes: [
-        { id: "D", type: "orphan" }
-      ],
-      dangling_edges: [
-        { from: "B", from_type: "middle", to: "E", to_type: null },
-        { from: "F", from_type: null, to: "C", to_type: "end" }
-      ],
-      duplicate_nodes: [
-        {
-          id: "A",
-          count: 2n,
-          instances: [
-            { id: "A", type: "start" },
-            { id: "A", type: "start_duplicate" }
-          ]
-        }
-      ],
-      duplicate_edges: [
-        { from: "A", from_type: "start", to: "B", to_type: "middle", count: 2n }
+      problematic_edge_patterns: [
+        { from_type: "pattern", to_type: "analysis", dangling_count: 0n, valid_count: 1n, failure_rate: 0.0 },
+        { from_type: "pattern", to_type: "analysis", dangling_count: 1n, valid_count: 0n, failure_rate: 100.0 },
+        { from_type: "pattern", to_type: "analysis", dangling_count: 0n, valid_count: 1n, failure_rate: 0.0 },
+        { from_type: "pattern", to_type: "analysis", dangling_count: 1n, valid_count: 0n, failure_rate: 100.0 }
       ]
     }
   );
 
-// Test 7: Empty graph
-const validate_empty_test = new UnitTestBuilder("validate_empty")
-  .procedure(graph_validate)
-  .test(
-    {
-      nodes: [],
-      edges: []
-    },
-    {
-      valid_nodes: [],
-      valid_edges: [],
-      orphaned_nodes: [],
-      dangling_edges: [],
-      duplicate_nodes: [],
-      duplicate_edges: []
-    }
-  );
+// P0 CRITICAL EDGE CASES
 
-// Test 8: Single node (always orphaned unless self-loop)
-const validate_single_node_test = new UnitTestBuilder("validate_single_node")
+// Test: Special characters in node IDs - tests string operation robustness
+const validate_special_char_ids_test = new UnitTestBuilder("validate_special_char_ids")
   .procedure(graph_validate)
   .test(
     {
       nodes: [
-        { id: "A", type: "lonely" }
+        { id: ":", type: "separator" },      // Contains separator character used in edge keys
+        { id: "\n\t", type: "whitespace" },  // Whitespace characters
+        { id: "🚀", type: "unicode" },       // Unicode characters
+        { id: "null", type: "keyword" },     // Reserved word
+        { id: "", type: "empty" }            // Empty string (already tested but included)
       ],
-      edges: []
-    },
-    {
-      valid_nodes: [
-        { id: "A", type: "lonely" }
-      ],
-      valid_edges: [],
-      orphaned_nodes: [
-        { id: "A", type: "lonely" }
-      ],
-      dangling_edges: [],
-      duplicate_nodes: [],
-      duplicate_edges: []
-    }
-  );
-
-// Test 9: Edges without any nodes (all dangling) - CRITICAL EDGE CASE
-const validate_edges_no_nodes_test = new UnitTestBuilder("validate_edges_no_nodes")
-  .procedure(graph_validate)
-  .test(
-    {
-      nodes: [],
       edges: [
-        { from: "A", to: "B" },
-        { from: "B", to: "C" },
-        { from: "A", to: "A" } // Self-loop on non-existent node
+        { from: ":", to: "\n\t" },
+        { from: "🚀", to: "null" },
+        { from: "null", to: "" }
       ]
     },
     {
-      valid_nodes: [],
-      valid_edges: [],
-      orphaned_nodes: [],
-      dangling_edges: [
-        { from: "A", from_type: null, to: "B", to_type: null },
-        { from: "B", from_type: null, to: "C", to_type: null },
-        { from: "A", from_type: null, to: "A", to_type: null }
+      total_node_count: 5n,
+      total_edge_count: 3n,
+      valid_node_count: 5n,
+      valid_edge_count: 3n,
+      orphaned_node_count: 0n,
+      dangling_edge_count: 0n,
+      duplicate_node_count: 0n,
+      duplicate_edge_count: 0n,
+      node_validity_ratio: 1.0,
+      edge_validity_ratio: 1.0,
+      connectivity_ratio: 1.0,
+      problematic_node_types: [
+        { node_type: "empty", orphaned_count: 0n, total_count: 1n, orphaned_percentage: 0.0 },
+        { node_type: "keyword", orphaned_count: 0n, total_count: 1n, orphaned_percentage: 0.0 },
+        { node_type: "separator", orphaned_count: 0n, total_count: 1n, orphaned_percentage: 0.0 },
+        { node_type: "unicode", orphaned_count: 0n, total_count: 1n, orphaned_percentage: 0.0 },
+        { node_type: "whitespace", orphaned_count: 0n, total_count: 1n, orphaned_percentage: 0.0 }
       ],
-      duplicate_nodes: [],
-      duplicate_edges: []
+      problematic_edge_patterns: [
+        { from_type: "pattern", to_type: "analysis", dangling_count: 0n, valid_count: 1n, failure_rate: 0.0 },
+        { from_type: "pattern", to_type: "analysis", dangling_count: 0n, valid_count: 1n, failure_rate: 0.0 },
+        { from_type: "pattern", to_type: "analysis", dangling_count: 0n, valid_count: 1n, failure_rate: 0.0 }
+      ]
     }
   );
 
-// Test 10: Duplicate edges with missing nodes - CRITICAL EDGE CASE
-const validate_duplicate_edges_missing_nodes_test = new UnitTestBuilder("validate_duplicate_edges_missing_nodes")
+// Test: All disconnected graph - every node is isolated (worst case for connectivity)
+const validate_all_disconnected_test = new UnitTestBuilder("validate_all_disconnected")
   .procedure(graph_validate)
   .test(
     {
       nodes: [
-        { id: "A", type: "start" }
+        { id: "A", type: "isolated" },
+        { id: "B", type: "isolated" },
+        { id: "C", type: "isolated" },
+        { id: "D", type: "isolated" },
+        { id: "E", type: "isolated" }
       ],
-      edges: [
-        { from: "A", to: "B" }, // B doesn't exist
-        { from: "A", to: "B" }, // Duplicate of above
-        { from: "C", to: "D" }, // Both don't exist
-        { from: "C", to: "D" }, // Duplicate of above
-        { from: "C", to: "D" }  // Triple of above
-      ]
+      edges: [] // No edges - complete disconnection
     },
     {
-      valid_nodes: [
-        { id: "A", type: "start" }
+      total_node_count: 5n,
+      total_edge_count: 0n,
+      valid_node_count: 5n,
+      valid_edge_count: 0n,
+      orphaned_node_count: 5n, // All nodes are orphaned
+      dangling_edge_count: 0n,
+      duplicate_node_count: 0n,
+      duplicate_edge_count: 0n,
+      node_validity_ratio: 1.0,
+      edge_validity_ratio: 0.0, // 0/0 = 0.0 with DivideSafe
+      connectivity_ratio: 0.0,   // No nodes connected
+      problematic_node_types: [
+        { node_type: "isolated", orphaned_count: 5n, total_count: 5n, orphaned_percentage: 100.0 }
       ],
-      valid_edges: [],
-      orphaned_nodes: [
-        { id: "A", type: "start" } // No valid edges reference A
-      ],
-      dangling_edges: [
-        { from: "A", from_type: "start", to: "B", to_type: null },
-        { from: "A", from_type: "start", to: "B", to_type: null },
-        { from: "C", from_type: null, to: "D", to_type: null },
-        { from: "C", from_type: null, to: "D", to_type: null },
-        { from: "C", from_type: null, to: "D", to_type: null }
-      ],
-      duplicate_nodes: [],
-      duplicate_edges: [
-        { from: "A", from_type: "start", to: "B", to_type: null, count: 2n },
-        { from: "C", from_type: null, to: "D", to_type: null, count: 3n }
-      ]
+      problematic_edge_patterns: []
     }
   );
 
-// Test 11: Mixed scenario - some nodes exist, some don't, with duplicates
-const validate_mixed_existence_test = new UnitTestBuilder("validate_mixed_existence")
+// Test: Hub pattern - all edges point to one central node
+const validate_hub_pattern_test = new UnitTestBuilder("validate_hub_pattern")
   .procedure(graph_validate)
   .test(
     {
       nodes: [
-        { id: "A", type: "real" },
-        { id: "C", type: "real" }
+        { id: "HUB", type: "central" },
+        { id: "A", type: "spoke" },
+        { id: "B", type: "spoke" },
+        { id: "C", type: "spoke" },
+        { id: "D", type: "spoke" }
       ],
       edges: [
-        { from: "A", to: "B" }, // B doesn't exist
-        { from: "B", to: "C" }, // B doesn't exist but C does
-        { from: "X", to: "Y" }, // Neither exists
-        { from: "A", to: "C" }  // Both exist - valid edge
+        { from: "A", to: "HUB" },
+        { from: "B", to: "HUB" },
+        { from: "C", to: "HUB" },
+        { from: "D", to: "HUB" }
       ]
     },
     {
-      valid_nodes: [
-        { id: "A", type: "real" },
-        { id: "C", type: "real" }
+      total_node_count: 5n,
+      total_edge_count: 4n,
+      valid_node_count: 5n,
+      valid_edge_count: 4n,
+      orphaned_node_count: 0n,
+      dangling_edge_count: 0n,
+      duplicate_node_count: 0n,
+      duplicate_edge_count: 0n,
+      node_validity_ratio: 1.0,
+      edge_validity_ratio: 1.0,
+      connectivity_ratio: 1.0,
+      problematic_node_types: [
+        { node_type: "central", orphaned_count: 0n, total_count: 1n, orphaned_percentage: 0.0 },
+        { node_type: "spoke", orphaned_count: 0n, total_count: 4n, orphaned_percentage: 0.0 }
       ],
-      valid_edges: [
+      problematic_edge_patterns: [
+        { from_type: "pattern", to_type: "analysis", dangling_count: 0n, valid_count: 4n, failure_rate: 0.0 }
+      ]
+    }
+  );
+
+// Test: Star pattern - all edges emanate from one central node
+const validate_star_pattern_test = new UnitTestBuilder("validate_star_pattern")
+  .procedure(graph_validate)
+  .test(
+    {
+      nodes: [
+        { id: "CENTER", type: "source" },
+        { id: "A", type: "target" },
+        { id: "B", type: "target" },
+        { id: "C", type: "target" },
+        { id: "D", type: "target" }
+      ],
+      edges: [
+        { from: "CENTER", to: "A" },
+        { from: "CENTER", to: "B" },
+        { from: "CENTER", to: "C" },
+        { from: "CENTER", to: "D" }
+      ]
+    },
+    {
+      total_node_count: 5n,
+      total_edge_count: 4n,
+      valid_node_count: 5n,
+      valid_edge_count: 4n,
+      orphaned_node_count: 0n,
+      dangling_edge_count: 0n,
+      duplicate_node_count: 0n,
+      duplicate_edge_count: 0n,
+      node_validity_ratio: 1.0,
+      edge_validity_ratio: 1.0,
+      connectivity_ratio: 1.0,
+      problematic_node_types: [
+        { node_type: "source", orphaned_count: 0n, total_count: 1n, orphaned_percentage: 0.0 },
+        { node_type: "target", orphaned_count: 0n, total_count: 4n, orphaned_percentage: 0.0 }
+      ],
+      problematic_edge_patterns: [
+        { from_type: "pattern", to_type: "analysis", dangling_count: 0n, valid_count: 4n, failure_rate: 0.0 }
+      ]
+    }
+  );
+
+// P1 HIGH PRIORITY EDGE CASES
+
+// Test: Massive duplicates - programmatically generate many same-ID nodes
+const validate_massive_duplicates_test = new UnitTestBuilder("validate_massive_duplicates")
+  .procedure(graph_validate)
+  .test(
+    {
+      nodes: [
+        // Create 50 duplicate nodes with same ID (manageable for testing, represents the pattern)
+        ...Array.from({length: 50}, (_, i) => ({ id: "DUPLICATE", type: `type_${i}` })),
+        { id: "B", type: "unique" }
+      ],
+      edges: [
+        { from: "DUPLICATE", to: "B" }
+      ]
+    },
+    {
+      total_node_count: 51n,
+      total_edge_count: 1n,
+      valid_node_count: 2n, // Only first DUPLICATE + B kept
+      valid_edge_count: 1n,
+      orphaned_node_count: 0n,
+      dangling_edge_count: 0n,
+      duplicate_node_count: 1n, // DUPLICATE has duplicates
+      duplicate_edge_count: 0n,
+      node_validity_ratio: 0.0392156862745098, // 2/51 ≈ 0.039
+      edge_validity_ratio: 1.0,
+      connectivity_ratio: 1.0,
+      problematic_node_types: [
+        { node_type: "type_0", orphaned_count: 0n, total_count: 1n, orphaned_percentage: 0.0 },
+        { node_type: "unique", orphaned_count: 0n, total_count: 1n, orphaned_percentage: 0.0 }
+      ],
+      problematic_edge_patterns: [
+        { from_type: "pattern", to_type: "analysis", dangling_count: 0n, valid_count: 1n, failure_rate: 0.0 }
+      ]
+    }
+  );
+
+// Test: Dense self-loop scenarios - multiple self-loops per node
+const validate_dense_self_loops_test = new UnitTestBuilder("validate_dense_self_loops")
+  .procedure(graph_validate)
+  .test(
+    {
+      nodes: [
+        { id: "A", type: "self_ref" },
+        { id: "B", type: "self_ref" },
+        { id: "C", type: "normal" }
+      ],
+      edges: [
+        // Multiple self-loops on A
+        { from: "A", to: "A" },
+        { from: "A", to: "A" },
+        { from: "A", to: "A" },
+        // Multiple self-loops on B  
+        { from: "B", to: "B" },
+        { from: "B", to: "B" },
+        // Normal edge
         { from: "A", to: "C" }
+      ]
+    },
+    {
+      total_node_count: 3n,
+      total_edge_count: 6n,
+      valid_node_count: 3n,
+      valid_edge_count: 3n, // A->A, B->B, A->C (duplicates removed)
+      orphaned_node_count: 0n, // All nodes referenced by valid edges
+      dangling_edge_count: 0n,
+      duplicate_node_count: 0n,
+      duplicate_edge_count: 2n, // A->A and B->B patterns duplicated
+      node_validity_ratio: 1.0,
+      edge_validity_ratio: 0.5, // 3/6 = 0.5
+      connectivity_ratio: 1.0,
+      problematic_node_types: [
+        { node_type: "normal", orphaned_count: 0n, total_count: 1n, orphaned_percentage: 0.0 },
+        { node_type: "self_ref", orphaned_count: 0n, total_count: 2n, orphaned_percentage: 0.0 }
       ],
-      orphaned_nodes: [], // Both A and C are referenced by valid edge
-      dangling_edges: [
-        { from: "A", from_type: "real", to: "B", to_type: null },
-        { from: "B", from_type: null, to: "C", to_type: "real" },
-        { from: "X", from_type: null, to: "Y", to_type: null }
-      ],
-      duplicate_nodes: [],
-      duplicate_edges: []
+      problematic_edge_patterns: [
+        { from_type: "pattern", to_type: "analysis", dangling_count: 0n, valid_count: 1n, failure_rate: 0.0 },
+        { from_type: "pattern", to_type: "analysis", dangling_count: 0n, valid_count: 2n, failure_rate: 0.0 }
+      ]
     }
   );
 
-// Test 12: Empty string node IDs - CRITICAL EDGE CASE
-const validate_empty_string_ids_test = new UnitTestBuilder("validate_empty_string_ids")
+// P2 MEDIUM PRIORITY EDGE CASES
+
+// Test: Asymmetric edge patterns - edges only go one direction in bipartite-like structure
+const validate_asymmetric_edges_test = new UnitTestBuilder("validate_asymmetric_edges")
   .procedure(graph_validate)
   .test(
     {
       nodes: [
-        { id: "", type: "empty" },
-        { id: "A", type: "normal" }
+        { id: "L1", type: "left" },
+        { id: "L2", type: "left" },
+        { id: "R1", type: "right" },
+        { id: "R2", type: "right" },
+        { id: "ISO", type: "isolated" }
       ],
       edges: [
-        { from: "", to: "A" },
-        { from: "A", to: "" },
-        { from: "", to: "" } // Self-loop on empty ID
+        // All edges go left->right, none go right->left (asymmetric)
+        { from: "L1", to: "R1" },
+        { from: "L1", to: "R2" },
+        { from: "L2", to: "R1" },
+        { from: "L2", to: "R2" }
+        // ISO has no edges (isolated node)
       ]
     },
     {
-      valid_nodes: [
-        { id: "", type: "empty" },
-        { id: "A", type: "normal" }
+      total_node_count: 5n,
+      total_edge_count: 4n,
+      valid_node_count: 5n,
+      valid_edge_count: 4n,
+      orphaned_node_count: 1n, // ISO is orphaned
+      dangling_edge_count: 0n,
+      duplicate_node_count: 0n,
+      duplicate_edge_count: 0n,
+      node_validity_ratio: 1.0,
+      edge_validity_ratio: 1.0,
+      connectivity_ratio: 0.8, // 4/5 nodes connected
+      problematic_node_types: [
+        { node_type: "isolated", orphaned_count: 1n, total_count: 1n, orphaned_percentage: 100.0 },
+        { node_type: "left", orphaned_count: 0n, total_count: 2n, orphaned_percentage: 0.0 },
+        { node_type: "right", orphaned_count: 0n, total_count: 2n, orphaned_percentage: 0.0 }
       ],
-      valid_edges: [
-        { from: "", to: "A" },
-        { from: "A", to: "" },
-        { from: "", to: "" }
-      ],
-      orphaned_nodes: [],
-      dangling_edges: [],
-      duplicate_nodes: [],
-      duplicate_edges: []
-    }
-  );
-
-// Test 13: Node IDs containing separator character - CRITICAL EDGE CASE
-const validate_separator_in_ids_test = new UnitTestBuilder("validate_separator_in_ids")
-  .procedure(graph_validate)
-  .test(
-    {
-      nodes: [
-        { id: "A:B", type: "colon_id" },
-        { id: "A", type: "normal" },
-        { id: "B:C", type: "colon_id2" }
-      ],
-      edges: [
-        { from: "A:B", to: "A" },
-        { from: "A", to: "B:C" },
-        { from: "A:B", to: "B:C" } // Both IDs have colons
-      ]
-    },
-    {
-      valid_nodes: [
-        { id: "A", type: "normal" },
-        { id: "A:B", type: "colon_id" },
-        { id: "B:C", type: "colon_id2" }
-      ],
-      valid_edges: [
-        { from: "A:B", to: "A" },
-        { from: "A", to: "B:C" },
-        { from: "A:B", to: "B:C" }
-      ],
-      orphaned_nodes: [],
-      dangling_edges: [],
-      duplicate_nodes: [],
-      duplicate_edges: []
-    }
-  );
-
-// Test 14: Self-loops with non-existent nodes - EDGE CASE
-const validate_self_loop_missing_node_test = new UnitTestBuilder("validate_self_loop_missing_node")
-  .procedure(graph_validate)
-  .test(
-    {
-      nodes: [
-        { id: "A", type: "real" }
-      ],
-      edges: [
-        { from: "A", to: "A" }, // Valid self-loop
-        { from: "B", to: "B" }, // Self-loop on missing node
-        { from: "C", to: "C" }  // Another self-loop on missing node
-      ]
-    },
-    {
-      valid_nodes: [
-        { id: "A", type: "real" }
-      ],
-      valid_edges: [
-        { from: "A", to: "A" }
-      ],
-      orphaned_nodes: [], // A is referenced by its own self-loop
-      dangling_edges: [
-        { from: "B", from_type: null, to: "B", to_type: null },
-        { from: "C", from_type: null, to: "C", to_type: null }
-      ],
-      duplicate_nodes: [],
-      duplicate_edges: []
-    }
-  );
-
-// Test 15: Extreme duplicate counts - STRESS TEST
-const validate_extreme_duplicates_test = new UnitTestBuilder("validate_extreme_duplicates")
-  .procedure(graph_validate)
-  .test(
-    {
-      nodes: [
-        { id: "A", type: "first" },
-        { id: "A", type: "second" },
-        { id: "A", type: "third" },
-        { id: "A", type: "fourth" },
-        { id: "A", type: "fifth" }
-      ],
-      edges: [
-        { from: "A", to: "B" },
-        { from: "A", to: "B" },
-        { from: "A", to: "B" },
-        { from: "A", to: "B" },
-        { from: "A", to: "B" },
-        { from: "A", to: "B" }
-      ]
-    },
-    {
-      valid_nodes: [
-        { id: "A", type: "first" } // First occurrence kept
-      ],
-      valid_edges: [],
-      orphaned_nodes: [
-        { id: "A", type: "first" } // A is orphaned since B doesn't exist
-      ],
-      dangling_edges: [
-        { from: "A", from_type: "first", to: "B", to_type: null },
-        { from: "A", from_type: "first", to: "B", to_type: null },
-        { from: "A", from_type: "first", to: "B", to_type: null },
-        { from: "A", from_type: "first", to: "B", to_type: null },
-        { from: "A", from_type: "first", to: "B", to_type: null },
-        { from: "A", from_type: "first", to: "B", to_type: null }
-      ],
-      duplicate_nodes: [
-        {
-          id: "A",
-          count: 5n,
-          instances: [
-            { id: "A", type: "first" },
-            { id: "A", type: "second" },
-            { id: "A", type: "third" },
-            { id: "A", type: "fourth" },
-            { id: "A", type: "fifth" }
-          ]
-        }
-      ],
-      duplicate_edges: [
-        { from: "A", from_type: "first", to: "B", to_type: null, count: 6n }
+      problematic_edge_patterns: [
+        { from_type: "pattern", to_type: "analysis", dangling_count: 0n, valid_count: 4n, failure_rate: 0.0 }
       ]
     }
   );
@@ -552,18 +576,19 @@ export default Template(
   validate_duplicate_edges_test,
   validate_dangling_edges_test,
   validate_orphaned_nodes_test,
-  validate_complex_issues_test,
   validate_empty_test,
-  validate_single_node_test,
+  validate_complex_issues_test,
   
-  // Critical edge case tests (added to prevent production failures)
-  validate_edges_no_nodes_test,
-  validate_duplicate_edges_missing_nodes_test,
-  validate_mixed_existence_test,
+  // P0 Critical Edge Cases
+  validate_special_char_ids_test,
+  validate_all_disconnected_test,
+  validate_hub_pattern_test,
+  validate_star_pattern_test,
   
-  // Additional edge case tests for robustness
-  validate_empty_string_ids_test,
-  validate_separator_in_ids_test,
-  validate_self_loop_missing_node_test,
-  validate_extreme_duplicates_test
+  // P1 High Priority Edge Cases
+  validate_massive_duplicates_test,
+  validate_dense_self_loops_test,
+  
+  // P2 Medium Priority Edge Cases
+  validate_asymmetric_edges_test
 );

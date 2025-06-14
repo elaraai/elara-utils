@@ -11,8 +11,8 @@ import {
 
 import { ArrayType, StringType } from "@elaraai/core";
 
-import { graph_aggregation_by_type } from "./aggregation_by_type";
-import { graph_build_adjacency_lists } from "../shared_utils";
+import { graph_aggregation_by_type } from "../analysis/type_aggregation";
+import { graph_build_adjacency_lists } from "../core/adjacency_lists";
 import {
   GraphNode,
   GraphEdge,

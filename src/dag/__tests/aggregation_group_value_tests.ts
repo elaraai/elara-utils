@@ -1,6 +1,6 @@
 import { UnitTestBuilder } from "@elaraai/core";
 import { Template } from "@elaraai/core";
-import { graph_group_value_rollup } from "../aggregation/group_value_rollup";
+import { graph_group_value_rollup } from "../aggregation/group_values";
 
 // === GROUP VALUE ROLLUP TESTS ===
 

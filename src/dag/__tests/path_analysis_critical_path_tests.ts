@@ -1,7 +1,7 @@
 import { UnitTestBuilder } from "@elaraai/core";
 import { Template } from "@elaraai/core";
 
-import { graph_critical_path } from "../path_analysis/critical_path";
+import { graph_critical_path } from "../paths/critical_path";
 
 // === CRITICAL PATH TESTS ===
 

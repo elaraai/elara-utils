@@ -1,7 +1,7 @@
 import { UnitTestBuilder } from "@elaraai/core";
 import { Template } from "@elaraai/core";
 
-import { graph_topological_sort } from "../graph_traversal/topological_sort";
+import { graph_topological_sort } from "../traversal/topological_sort";
 
 // === TOPOLOGICAL SORT TESTS ===
 

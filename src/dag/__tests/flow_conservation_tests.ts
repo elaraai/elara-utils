@@ -1,6 +1,6 @@
 import { UnitTestBuilder } from "@elaraai/core";
 import { Template } from "@elaraai/core";
-import { graph_flow_conservation } from "../flow_conservation/flow_conservation";
+import { graph_flow_conservation } from "../flow/flow_conservation";
 
 // Basic flow conservation test - balanced
 const flow_conservation_balanced_test = new UnitTestBuilder("flow_conservation_balanced")

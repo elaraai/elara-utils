@@ -1,7 +1,7 @@
 import { UnitTestBuilder } from "@elaraai/core";
 import { Template } from "@elaraai/core";
 
-import { graph_ancestor_descendant } from "../graph_traversal/ancestor_descendant";
+import { graph_ancestor_descendant } from "../traversal/ancestor_descendant";
 
 // === ANCESTOR/DESCENDANT TESTS ===
 

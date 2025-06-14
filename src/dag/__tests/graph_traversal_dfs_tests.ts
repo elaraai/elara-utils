@@ -1,7 +1,7 @@
 import { UnitTestBuilder } from "@elaraai/core";
 import { Template } from "@elaraai/core";
 
-import { graph_dfs } from "../graph_traversal/dfs";
+import { graph_dfs } from "../traversal/depth_first";
 
 // === DFS TESTS ===
 

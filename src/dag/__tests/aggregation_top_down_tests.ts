@@ -1,6 +1,6 @@
 import { UnitTestBuilder } from "@elaraai/core";
 import { Template } from "@elaraai/core";
-import { graph_top_down_aggregation } from "../aggregation/top_down_aggregation";
+import { graph_top_down_aggregation } from "../aggregation/top_down";
 
 // === TOP-DOWN AGGREGATION TESTS ===
 

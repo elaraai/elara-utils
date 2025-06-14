@@ -1,6 +1,6 @@
 import { UnitTestBuilder } from "@elaraai/core";
 import { Template } from "@elaraai/core";
-import { graph_build_adjacency_lists } from "../shared_utils/build_adjacency_lists";
+import { graph_build_adjacency_lists } from "../core/adjacency_lists";
 
 // Basic adjacency list building test
 const basic_adjacency_test = new UnitTestBuilder("basic_adjacency")

@@ -1,6 +1,6 @@
 import { UnitTestBuilder } from "@elaraai/core";
 import { Template } from "@elaraai/core";
-import { graph_dynamic_reachability } from "../flow_conservation/dynamic_reachability";
+import { graph_dynamic_reachability } from "../connectivity/dynamic_reachability";
 
 // Basic dynamic reachability test
 const dynamic_reachability_basic_test = new UnitTestBuilder("dynamic_reachability_basic")

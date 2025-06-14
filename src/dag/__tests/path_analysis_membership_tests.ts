@@ -1,7 +1,7 @@
 import { UnitTestBuilder } from "@elaraai/core";
 import { Template } from "@elaraai/core";
 
-import { graph_path_membership } from "../path_analysis/path_membership";
+import { graph_path_membership } from "../paths/path_membership";
 
 // === PATH MEMBERSHIP TESTS ===
 

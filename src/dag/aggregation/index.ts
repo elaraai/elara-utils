@@ -1,7 +1,9 @@
-export { graph_bottom_up_aggregation } from "./bottom_up_aggregation";
-export { graph_top_down_aggregation } from "./top_down_aggregation";
-export { graph_weighted_aggregation } from "./weighted_aggregation";
-export { graph_group_value_rollup } from "./group_value_rollup";
-export { graph_aggregation_by_type } from "./aggregation_by_type";
+export { graph_aggregation_bottom_up } from "./bottom_up";
+export { graph_aggregation_top_down } from "./top_down";
+export { graph_aggregation_weighted } from "./weighted";
+export { graph_aggregation_group_values } from "./group_values";
+export { graph_temporal_bottom_up_aggregation } from "./temporal_bottom_up";
+export { graph_temporal_top_down_aggregation } from "./temporal_top_down";
+export { graph_aggregation_by_type } from "./type_aggregation";
 export { graph_type_statistics } from "./type_statistics";
 export { graph_path_statistics } from "./path_statistics";

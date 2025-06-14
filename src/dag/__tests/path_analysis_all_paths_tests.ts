@@ -1,7 +1,7 @@
 import { UnitTestBuilder } from "@elaraai/core";
 import { Template } from "@elaraai/core";
 
-import { graph_all_paths } from "../path_analysis/all_paths";
+import { graph_all_paths } from "../paths/all_paths";
 
 // === ALL PATHS TESTS ===
 

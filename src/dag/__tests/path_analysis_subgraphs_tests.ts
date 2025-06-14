@@ -1,7 +1,7 @@
 import { UnitTestBuilder } from "@elaraai/core";
 import { Template } from "@elaraai/core";
 
-import { graph_subgraphs } from "../path_analysis/subgraphs";
+import { graph_subgraphs } from "../paths/subgraph_extraction";
 
 // ===== SUBGRAPH EXTRACTION FROM CONNECTED COMPONENTS TESTS =====
 

@@ -17,8 +17,8 @@ import {
 
 import { ArrayType, StringType } from "@elaraai/core";
 
-import { graph_build_adjacency_lists } from "../shared_utils";
-import { graph_bfs } from "../graph_traversal/bfs";
+import { graph_build_adjacency_lists } from "../core";
+import { graph_bfs } from "../traversal/breadth_first";
 import {
   GraphNode,
   GraphEdge,

@@ -1,7 +1,7 @@
 import { UnitTestBuilder } from "@elaraai/core";
 import { Template } from "@elaraai/core";
 
-import { graph_shortest_path } from "../path_analysis/shortest_path";
+import { graph_shortest_path } from "../paths/shortest_path";
 
 // === SHORTEST PATH TESTS ===
 

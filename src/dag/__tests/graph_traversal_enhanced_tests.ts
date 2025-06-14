@@ -1,7 +1,7 @@
 import { UnitTestBuilder } from "@elaraai/core";
 import { Template } from "@elaraai/core";
 
-import { graph_enhanced_traversal } from "../graph_traversal/enhanced_traversal";
+import { graph_enhanced_traversal } from "../traversal/enhanced_traversal";
 
 // === ENHANCED TRAVERSAL TESTS ===
 

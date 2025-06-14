@@ -1,6 +1,6 @@
 import { UnitTestBuilder } from "@elaraai/core";
 import { Template } from "@elaraai/core";
-import { graph_connected_components } from "../flow_conservation/connected_components";
+import { graph_connected_components } from "../connectivity/connected_components";
 
 // Single connected component
 const connected_components_single_test = new UnitTestBuilder("connected_components_single")

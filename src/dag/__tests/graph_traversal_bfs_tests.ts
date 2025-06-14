@@ -1,7 +1,7 @@
 import { UnitTestBuilder } from "@elaraai/core";
 import { Template } from "@elaraai/core";
 
-import { graph_bfs } from "../graph_traversal/bfs";
+import { graph_bfs } from "../traversal/breadth_first";
 
 // === BFS TESTS ===
 

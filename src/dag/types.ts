@@ -284,6 +284,28 @@ export const GraphValidateResult = StructType({
     dangling_edges: ArrayType(GraphDanglingEdge),
     duplicate_nodes: ArrayType(GraphDuplicateNode),
     duplicate_edges: ArrayType(GraphDuplicateEdge),
+
+    // These require connected components analysis PER subgraph
+    largest_valid_component_size: IntegerType,        // Needs connected components
+    component_fragmentation: FloatType,               // Needs connected components
+
+    // Pattern matching across multiple subgraphs
+    missing_transition_patterns: ArrayType(StructType({
+        expected_from_type: StringType,     // e.g., "weightnote" 
+        expected_to_type: StringType,       // e.g., "crushing"
+        components_missing_pattern: IntegerType,
+        description: StringType             // "weightnote nodes not connecting to crushing"
+    })),     // Cross-subgraph analysis
+    bridge_node_analysis: ArrayType(StructType({
+        node_type: StringType,
+        acts_as_bridge_count: IntegerType,    // Nodes connecting components
+        criticality_score: FloatType          // How critical for connectivity
+    })),
+    workflow_completeness: StructType({
+        complete_workflows: IntegerType,       // weightnote→crushing→operations
+        incomplete_workflows: IntegerType,     // Missing steps
+        most_common_break_point: StringType   // Where workflows typically break
+    })
 });
 
 // Path subgraph for source/target extraction algorithms
@@ -317,6 +339,41 @@ export const GraphTypeStatistics = StructType({
 });
 
 
+// Graph overview statistics result
+export const GraphValidStatistics = StructType({
+    // Cheap basic metrics
+    total_node_count: IntegerType,
+    total_edge_count: IntegerType,
+    valid_node_count: IntegerType,
+    valid_edge_count: IntegerType,
+    orphaned_node_count: IntegerType,
+    dangling_edge_count: IntegerType,
+    duplicate_node_count: IntegerType,
+    duplicate_edge_count: IntegerType,
+
+    // Cheap ratios
+    node_validity_ratio: FloatType,
+    edge_validity_ratio: FloatType,
+    connectivity_ratio: FloatType,
+
+    // Moderate - but very valuable for your use case
+    problematic_node_types: ArrayType(StructType({
+        node_type: StringType,
+        orphaned_count: IntegerType,
+        total_count: IntegerType,
+        orphaned_percentage: FloatType
+    })),
+
+    problematic_edge_patterns: ArrayType(StructType({
+        from_type: StringType,
+        to_type: StringType,
+        dangling_count: IntegerType,
+        valid_count: IntegerType,
+        failure_rate: FloatType
+    }))
+});
+
+
 // Graph path statistics result - comprehensive path analysis metrics
 export const GraphPathStatistics = StructType({
     // Basic counts
@@ -326,11 +383,11 @@ export const GraphPathStatistics = StructType({
     // Path depth metrics (longest dependency chain)
     longest_path_length: IntegerType,      // Number of edges in longest simple path (dependency depth)
     longest_path_depth: IntegerType,       // Number of levels in deepest path (1-based: root=1, child=2, etc.)
-    
+
     // Graph connectivity metrics (reachability breadth)
     total_reachable_nodes: FloatType,      // Maximum nodes reachable from any source (connectivity measure)
     connectivity_span: IntegerType,        // Edges in spanning tree from most connected source
-    
+
     // Structural metrics
     branching_factor: FloatType,           // Average outgoing edges per node (complexity measure)
 
