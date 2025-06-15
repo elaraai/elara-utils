@@ -19,7 +19,7 @@ const shortest_path_basic_test = new UnitTestBuilder("shortest_path_basic")
         { from: "A", to: "B", weight: 5.0, delay: null },
         { from: "B", to: "C", weight: 3.0, delay: null }
       ],
-      startId: "A",
+      source_node_id: "A",
       endId: "C"
     },
     {
@@ -45,7 +45,7 @@ const shortest_path_multiple_test = new UnitTestBuilder("shortest_path_multiple"
         { from: "B", to: "D", weight: 1.0, delay: null },
         { from: "C", to: "D", weight: 3.0, delay: null }
       ],
-      startId: "A",
+      source_node_id: "A",
       endId: "D"
     },
     {
@@ -74,7 +74,7 @@ const shortest_path_complex_test = new UnitTestBuilder("shortest_path_complex")
         { from: "C", to: "D", weight: 4.0, delay: null },
         { from: "D", to: "E", weight: 2.0, delay: null }
       ],
-      startId: "A",
+      source_node_id: "A",
       endId: "E"
     },
     {

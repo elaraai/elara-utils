@@ -19,7 +19,7 @@ const bfs_linear_test = new UnitTestBuilder("bfs_linear")
         { from: "A", to: "B", type: "flow" },
         { from: "B", to: "C", type: "flow" }
       ],
-      startId: "A"
+      source_node_id: "A"
     },
     ["A", "B", "C"]
   );
@@ -42,7 +42,7 @@ const bfs_tree_test = new UnitTestBuilder("bfs_tree")
         { from: "B", to: "D", type: "transfer" },
         { from: "B", to: "E", type: "transfer" }
       ],
-      startId: "A"
+      source_node_id: "A"
     },
     ["A", "B", "C", "D", "E"] // Level-order traversal
   );
@@ -64,7 +64,7 @@ const bfs_diamond_test = new UnitTestBuilder("bfs_diamond")
         { from: "B", to: "D", type: "merge" },
         { from: "C", to: "D", type: "merge" }
       ],
-      startId: "A"
+      source_node_id: "A"
     },
     ["A", "B", "C", "D"] // Should visit D only once
   );
@@ -76,7 +76,7 @@ const bfs_empty_test = new UnitTestBuilder("bfs_empty")
     {
       nodes: [],
       edges: [],
-      startId: "A"
+      source_node_id: "A"
     },
     ["A"] // Should return just the start node even if not in graph
   );
@@ -90,7 +90,7 @@ const bfs_single_node_test = new UnitTestBuilder("bfs_single_node")
         { id: "A", type: "isolated" }
       ],
       edges: [],
-      startId: "A"
+      source_node_id: "A"
     },
     ["A"] // Just the single node
   );
@@ -108,7 +108,7 @@ const bfs_self_loop_test = new UnitTestBuilder("bfs_self_loop")
         { from: "A", to: "A", type: "loop" }, // Self-loop
         { from: "A", to: "B", type: "flow" }
       ],
-      startId: "A"
+      source_node_id: "A"
     },
     ["A", "B"] // Should handle self-loop without infinite loop
   );
@@ -128,7 +128,7 @@ const bfs_disconnected_test = new UnitTestBuilder("bfs_disconnected")
         { from: "A", to: "B", type: "connect" },
         { from: "C", to: "D", type: "connect" } // Separate component
       ],
-      startId: "A"
+      source_node_id: "A"
     },
     ["A", "B"] // Should only visit connected component
   );
@@ -148,7 +148,7 @@ const bfs_cycle_test = new UnitTestBuilder("bfs_cycle")
         { from: "B", to: "C", type: "cycle" },
         { from: "C", to: "A", type: "cycle" } // Creates cycle
       ],
-      startId: "A"
+      source_node_id: "A"
     },
     ["A", "B", "C"] // Should visit each node exactly once
   );
@@ -167,7 +167,7 @@ const bfs_duplicate_edges_test = new UnitTestBuilder("bfs_duplicate_edges")
         { from: "A", to: "B", type: "duplicate" }, // Duplicate edge
         { from: "A", to: "B", type: "duplicate" }  // Another duplicate
       ],
-      startId: "A"
+      source_node_id: "A"
     },
     ["A", "B"] // Should handle duplicates correctly
   );
@@ -192,7 +192,7 @@ const bfs_large_branching_test = new UnitTestBuilder("bfs_large_branching")
         { from: "root", to: "child4", type: "spawn" },
         { from: "root", to: "child5", type: "spawn" }
       ],
-      startId: "root"
+      source_node_id: "root"
     },
     ["root", "child1", "child2", "child3", "child4", "child5"] // Level-order
   );
@@ -222,9 +222,82 @@ const bfs_sibling_endpoints_test = new UnitTestBuilder("bfs_sibling_endpoints")
         { from: "E", to: "F", type: "output" },
         { from: "E", to: "G", type: "output" }
       ],
-      startId: "F"
+      source_node_id: "F"
     },
     ["F"] // BFS from F should only find F (no outgoing edges from F)
+  );
+
+/**
+ * Test 12: Invalid Start Node (Production Error)
+ * Input: Start node not in graph | Output: Empty result, no crash
+ */
+const bfs_invalid_start_test = new UnitTestBuilder("bfs_invalid_start")
+  .procedure(graph_bfs)
+  .test(
+    {
+      nodes: [
+        { id: "A", type: "valid" },
+        { id: "B", type: "valid" }
+      ],
+      edges: [
+        { from: "A", to: "B", type: "connection" }
+      ],
+      source_node_id: "NONEXISTENT"
+    },
+    ["NONEXISTENT"]  // Basic BFS returns source_node_id even if it doesn't exist in edges
+  );
+
+/**
+ * Test 13: Dangling Edges (Bad Data)
+ * Input: Edges reference non-existent nodes | Output: Should ignore gracefully
+ */
+const bfs_dangling_edges_test = new UnitTestBuilder("bfs_dangling_edges")
+  .procedure(graph_bfs)
+  .test(
+    {
+      nodes: [
+        { id: "A", type: "valid" },
+        { id: "B", type: "valid" }
+      ],
+      edges: [
+        { from: "A", to: "B", type: "valid" },
+        { from: "A", to: "MISSING", type: "dangling" },  // Target doesn't exist
+        { from: "GHOST", to: "B", type: "dangling" },    // Source doesn't exist
+        { from: "VOID", to: "NULL", type: "both_missing" } // Both missing
+      ],
+      source_node_id: "A"
+    },
+    ["A", "B", "MISSING"]  // Basic BFS follows all edges, even to non-existent nodes
+  );
+
+/**
+ * Test 14: Complex Interconnected Cycles
+ * Input: Multiple overlapping cycles | Output: Visit each node exactly once
+ */
+const bfs_complex_cycles_test = new UnitTestBuilder("bfs_complex_cycles")
+  .procedure(graph_bfs)
+  .test(
+    {
+      nodes: [
+        { id: "A", type: "hub" },
+        { id: "B", type: "cycle1" },
+        { id: "C", type: "cycle1" },
+        { id: "D", type: "cycle2" },
+        { id: "E", type: "cycle2" }
+      ],
+      edges: [
+        { from: "A", to: "B", type: "start" },
+        { from: "A", to: "C", type: "start" },
+        { from: "B", to: "C", type: "cycle1" },
+        { from: "C", to: "B", type: "back1" },  // Cycle 1: B↔C
+        { from: "B", to: "D", type: "bridge" },
+        { from: "D", to: "E", type: "cycle2" },
+        { from: "E", to: "D", type: "back2" },  // Cycle 2: D↔E
+        { from: "C", to: "A", type: "return" }  // Back to start
+      ],
+      source_node_id: "A"
+    },
+    ["A", "B", "C", "D", "E"]  // BFS level-order traversal
   );
 
 export default Template(
@@ -238,5 +311,8 @@ export default Template(
   bfs_cycle_test,
   bfs_duplicate_edges_test,
   bfs_large_branching_test,
-  bfs_sibling_endpoints_test
+  bfs_sibling_endpoints_test,
+  bfs_invalid_start_test,
+  bfs_dangling_edges_test,
+  bfs_complex_cycles_test
 );

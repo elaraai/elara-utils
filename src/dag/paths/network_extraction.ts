@@ -237,7 +237,7 @@ export const graph_network_extraction = new Procedure("graph_network_extraction"
         const forward_reachable = $.let(procs.graph_bfs(Struct({
           nodes: nodes,
           edges: edges,
-          startId: starting_node_id
+          source_node_id: starting_node_id
         })));
         
         $.forArray(forward_reachable, ($, node_id) => {
@@ -248,7 +248,7 @@ export const graph_network_extraction = new Procedure("graph_network_extraction"
         const backward_reachable = $.let(procs.graph_bfs(Struct({
           nodes: nodes,
           edges: reversed_edges,
-          startId: starting_node_id
+          source_node_id: starting_node_id
         })));
         
         $.forArray(backward_reachable, ($, node_id) => {
@@ -262,7 +262,7 @@ export const graph_network_extraction = new Procedure("graph_network_extraction"
           const forward_reachable = $.let(procs.graph_bfs(Struct({
             nodes: nodes,
             edges: edges,
-            startId: node_id
+            source_node_id: node_id
           })));
           
           $.forArray(forward_reachable, ($, reachable_id) => {

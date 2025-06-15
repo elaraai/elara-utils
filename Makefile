@@ -15,7 +15,7 @@ dag_core_validation_tests:
 
 # Traversal tests
 .PHONY: dag_traversal_tests
-dag_traversal_tests: dag_traversal_breadth_first_tests dag_traversal_depth_first_tests dag_traversal_ancestor_descendant_tests dag_traversal_cycle_detection_tests dag_traversal_enhanced_traversal_tests dag_traversal_topological_sort_tests
+dag_traversal_tests: dag_traversal_breadth_first_tests dag_traversal_depth_first_tests dag_traversal_ancestor_descendant_tests dag_traversal_cycle_detection_tests dag_traversal_tracked_breadth_first_tests dag_traversal_tracked_depth_first_tests dag_traversal_topological_sort_tests
 
 .PHONY: dag_traversal_breadth_first_tests
 dag_traversal_breadth_first_tests:
@@ -33,9 +33,13 @@ dag_traversal_ancestor_descendant_tests:
 dag_traversal_cycle_detection_tests:
 	edk template test -t ts --path src/dag/__tests/traversal_cycle_detection_tests.ts
 
-.PHONY: dag_traversal_enhanced_traversal_tests
-dag_traversal_enhanced_traversal_tests:
-	edk template test -t ts --path src/dag/__tests/traversal_enhanced_traversal_tests.ts
+.PHONY: dag_traversal_tracked_breadth_first_tests
+dag_traversal_tracked_breadth_first_tests:
+	edk template test -t ts --path src/dag/__tests/traversal_tracked_breadth_first_tests.ts
+
+.PHONY: dag_traversal_tracked_depth_first_tests
+dag_traversal_tracked_depth_first_tests:
+	edk template test -t ts --path src/dag/__tests/traversal_tracked_depth_first_tests.ts
 
 .PHONY: dag_traversal_topological_sort_tests
 dag_traversal_topological_sort_tests:

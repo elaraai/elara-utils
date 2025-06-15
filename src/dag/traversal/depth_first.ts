@@ -60,22 +60,22 @@ import { GraphNode, GraphEdge } from "../types";
  * 
  * @param nodes Array of graph nodes (used for validation)
  * @param edges Array of directed edges representing connections (from → to)
- * @param startId ID of the node to begin traversal from
+ * @param source_node_id ID of the node to begin traversal from
  * @returns Array of node IDs in depth-first order
  */
 export const graph_dfs = new Procedure("graph_dfs")
   .input("nodes", ArrayType(GraphNode))
   .input("edges", ArrayType(GraphEdge))
-  .input("startId", StringType)
+  .input("source_node_id", StringType)
   .output(ArrayType(StringType))
   .import(graph_build_adjacency_lists)
-  .body(($, { edges, startId }, procs) => {
+  .body(($, { edges, source_node_id }, procs) => {
     // Build adjacency lists using shared utility
     const adjacencyData = $.let(procs.graph_build_adjacency_lists(Struct({ edges })));
     const adjacencyList = $.let(GetField(adjacencyData, "adjacency_list"));
     
     // DFS using stack (Procedure methods)
-    const stack = $.let(NewArray(StringType, [startId]));
+    const stack = $.let(NewArray(StringType, [source_node_id]));
     const visited = $.let(NewSet(StringType));
     const result = $.let(NewArray(StringType));
     

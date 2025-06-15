@@ -19,7 +19,7 @@ const all_paths_linear_test = new UnitTestBuilder("all_paths_linear")
         { from: "A", to: "B", type: "flow" },
         { from: "B", to: "C", type: "process" }
       ],
-      startId: "A",
+      source_node_id: "A",
       endId: "C"
     },
     {
@@ -45,7 +45,7 @@ const all_paths_multiple_test = new UnitTestBuilder("all_paths_multiple")
         { from: "B", to: "D", type: "merge" },
         { from: "C", to: "D", type: "merge" }
       ],
-      startId: "A",
+      source_node_id: "A",
       endId: "D"
     },
     {
@@ -74,7 +74,7 @@ const all_paths_complex_test = new UnitTestBuilder("all_paths_complex")
         { from: "B", to: "E", type: "direct" },
         { from: "D", to: "E", type: "transfer" }
       ],
-      startId: "A",
+      source_node_id: "A",
       endId: "E"
     },
     {
@@ -96,7 +96,7 @@ const all_paths_no_path_test = new UnitTestBuilder("all_paths_no_path")
       edges: [
         { from: "A", to: "B", type: "flow" }
       ],
-      startId: "A",
+      source_node_id: "A",
       endId: "C"
     },
     {

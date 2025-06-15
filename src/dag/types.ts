@@ -26,6 +26,16 @@ export const GraphTraversalNode = StructType({
 });
 // export type GraphTraversalNode = typeof GraphTraversalNode;
 
+export const GraphEnhancedTraversalNode = StructType({
+    id: StringType,
+    type: StringType,
+    visited_order: IntegerType,
+    depth: IntegerType,
+    parent_edge_types: ArrayType(StringType), // Types of edges leading to this node from the parent node
+    parent_id: Nullable(StringType),
+    parent_type: Nullable(StringType)
+});
+
 // Topological sort result node
 export const GraphTopologicalNode = StructType({
     id: StringType,

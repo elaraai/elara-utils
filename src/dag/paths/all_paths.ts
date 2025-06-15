@@ -72,18 +72,18 @@ import {
  * 
  * @param nodes Array of graph nodes (used for validation)
  * @param edges Array of directed edges representing connections (from → to)
- * @param startId ID of the starting node
+ * @param source_node_id ID of the starting node
  * @param endId ID of the target node
  * @returns Path result with array of all paths and total path count
  */
 export const graph_all_paths = new Procedure("graph_all_paths")
   .input("nodes", ArrayType(GraphNode))
   .input("edges", ArrayType(GraphEdge))
-  .input("startId", StringType)
+  .input("source_node_id", StringType)
   .input("endId", StringType)
   .output(GraphPathResult)
   .import(graph_build_adjacency_lists)
-  .body(($, { edges, startId, endId }, procs) => {
+  .body(($, { edges, source_node_id, endId }, procs) => {
     // Build adjacency lists using shared utility
     const adjacencyData = $.let(procs.graph_build_adjacency_lists(Struct({ edges })));
     const adjacencyList = $.let(GetField(adjacencyData, "adjacency_list"));
@@ -91,8 +91,8 @@ export const graph_all_paths = new Procedure("graph_all_paths")
     const allPaths = $.let(NewArray(ArrayType(StringType)));
 
     // DFS to find all paths
-    const dfsStack = $.let(NewArray(StringType, [startId]));
-    const pathStack = $.let(NewArray(ArrayType(StringType), [NewArray(StringType, [startId])]));
+    const dfsStack = $.let(NewArray(StringType, [source_node_id]));
+    const pathStack = $.let(NewArray(ArrayType(StringType), [NewArray(StringType, [source_node_id])]));
 
     $.while(Greater(Size(dfsStack), Const(0n)), $ => {
       const currentNode = $.let(Get(dfsStack, Subtract(Size(dfsStack), Const(1n))));

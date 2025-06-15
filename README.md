@@ -32,7 +32,8 @@ Fundamental graph operations and validation:
 Core graph traversal algorithms and analysis:
 - `breadth_first.ts` - Performs breadth-first search traversal visiting nodes level by level from the starting node using queue-based exploration
 - `depth_first.ts` - Performs depth-first search traversal exploring as far as possible along each branch before backtracking using stack-based exploration
-- `enhanced_traversal.ts` - Performs BFS or DFS with detailed tracking of depth, order, and parent relationships for spanning tree construction
+- `tracked_breadth_first.ts` - BFS traversal with detailed metadata tracking including visit order, depth, parent relationships, and edge type information for spanning tree construction and debugging
+- `tracked_depth_first.ts` - DFS traversal with detailed metadata tracking including visit order, depth, parent relationships, and edge type information for cycle detection and dependency analysis
 - `topological_sort.ts` - Orders nodes such that for every edge (A→B), A comes before B, essential for dependency-based task scheduling
 - `cycle_detection.ts` - Detects if the graph contains any cycles and identifies the nodes involved using DFS with state tracking
 - `ancestor_descendant.ts` - Identifies all ancestors, descendants, and reachable nodes for each node through transitive closure computation
@@ -52,6 +53,7 @@ Advanced path finding and subgraph extraction:
 - `shortest_path.ts` - Finds the path with minimum total weight from start to end node using Dijkstra's algorithm for weighted graphs
 - `critical_path.ts` - Identifies the longest path through a project network to determine project duration and critical tasks for scheduling
 - `subgraph_extraction.ts` - **Optimized O(V + E)** - Extracts subgraphs by connected components with optional node type filtering, with dramatic performance improvements for large graphs
+- `network_extraction.ts` - Extracts complete connected processing networks from specified starting points for batch genealogy traceability and supply chain analysis
 - `index.ts` - Exports all path analysis procedures
 
 #### Data Aggregation (`src/dag/aggregation/`)

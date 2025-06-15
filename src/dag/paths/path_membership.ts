@@ -48,23 +48,23 @@ import {
  * 
  * @param nodes Array of graph nodes (used for validation)
  * @param edges Array of directed edges representing connections (from → to)
- * @param startId ID of the starting node
+ * @param source_node_id ID of the starting node
  * @param endId ID of the target node
  * @returns Array of path nodes with id and array of path indices the node belongs to
  */
 export const graph_path_membership = new Procedure("graph_path_membership")
   .input("nodes", ArrayType(GraphNode))
   .input("edges", ArrayType(GraphEdge))
-  .input("startId", StringType)
+  .input("source_node_id", StringType)
   .input("endId", StringType)
   .output(ArrayType(GraphPathNode))
   .import(graph_all_paths)
-  .body(($, { nodes, edges, startId, endId }, procs) => {
+  .body(($, { nodes, edges, source_node_id, endId }, procs) => {
     // Use existing all_paths procedure to find all paths
     const pathResult = $.let(procs.graph_all_paths(Struct({
       nodes,
       edges,
-      startId,
+      source_node_id,
       endId
     })));
     const allPaths = $.let(GetField(pathResult, "paths"));

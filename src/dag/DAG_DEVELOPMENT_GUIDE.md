@@ -210,9 +210,9 @@ Divide(a, b)                               // Division
 const bfs = new Procedure("bfs")
   .input("nodes", ArrayType(GraphNode))
   .input("edges", ArrayType(GraphEdge))  
-  .input("startId", StringType)
+  .input("source_node_id", StringType)
   .output(ArrayType(StringType))
-  .body(($, { nodes, edges, startId }) => {
+  .body(($, { nodes, edges, source_node_id }) => {
     // Build adjacency list using Procedure methods
     const adjacencyList = $.let(NewDict(StringType, ArrayType(StringType)));
     
@@ -229,8 +229,8 @@ const bfs = new Procedure("bfs")
     });
     
     // BFS using queue (Procedure methods)
-    const queue = $.let(NewArray(StringType, [startId]));
-    const visited = $.let(NewSet(StringType, [startId]));
+    const queue = $.let(NewArray(StringType, [source_node_id]));
+    const visited = $.let(NewSet(StringType, [source_node_id]));
     const result = $.let(NewArray(StringType));
     
     $.while(Greater(Size(queue), Const(0n)), $ => {
@@ -259,9 +259,9 @@ const bfs = new Procedure("bfs")
 const dfs = new Procedure("dfs")
   .input("nodes", ArrayType(GraphNode))
   .input("edges", ArrayType(GraphEdge))
-  .input("startId", StringType)
+  .input("source_node_id", StringType)
   .output(ArrayType(StringType))
-  .body(($, { nodes, edges, startId }) => {
+  .body(($, { nodes, edges, source_node_id }) => {
     // Build adjacency list using Procedure methods
     const adjacencyList = $.let(NewDict(StringType, ArrayType(StringType)));
     
@@ -278,7 +278,7 @@ const dfs = new Procedure("dfs")
     });
     
     // DFS using stack (Procedure methods)
-    const stack = $.let(NewArray(StringType, [startId]));
+    const stack = $.let(NewArray(StringType, [source_node_id]));
     const visited = $.let(NewSet(StringType));
     const result = $.let(NewArray(StringType));
     
@@ -507,6 +507,164 @@ const test_name = new UnitTestBuilder("test_name")
 - **No edge case coverage**: Document how unusual inputs are handled
 - **Outdated examples**: Keep examples synchronized with actual behavior
 - **Generic descriptions**: Avoid copy-paste documentation that doesn't match the specific algorithm
+
+## Procedure Design Patterns and Best Practices
+
+### Reusing Core Algorithms vs Building Enhanced Variants
+
+When building advanced procedures that extend basic algorithms (like tracked traversal vs basic traversal):
+
+**When to Reuse:**
+- The core algorithm logic is simple and well-tested
+- You only need the final result, not intermediate metadata
+- Post-processing can efficiently extract what you need
+
+**When to Build Separate Procedures:**
+- You need metadata collected **during** traversal (parent relationships, visit order, edge types)
+- The enhanced version has different performance characteristics
+- Post-processing would require re-traversing the graph
+
+**Example: Tracked Traversal Design Decision**
+```typescript
+// ❌ WRONG: Trying to post-process basic BFS results
+const basic_result = $.let(procs.graph_bfs(...));
+// Problem: Can't reconstruct parent relationships or visit order from just node IDs
+
+// ✅ CORRECT: Separate procedure that collects metadata during traversal
+export const graph_tracked_bfs = new Procedure("graph_tracked_bfs")
+  .import(graph_build_adjacency_lists)  // Reuse shared utilities
+  .body(($, inputs, procs) => {
+    // Custom BFS loop that tracks metadata as it goes
+  });
+```
+
+### Managing Complex Data Structures
+
+**Nested Dictionaries Pattern:**
+```typescript
+// For mapping: from_node -> to_node -> [edge_types]
+const edgeTypeMap = $.let(NewDict(StringType, DictType(StringType, ArrayType(StringType))));
+
+// Build nested structure incrementally
+$.forArray(edges, ($, edge) => {
+  const fromId = $.let(GetField(edge, "from"));
+  const toId = $.let(GetField(edge, "to"));
+  const edgeType = $.let(GetField(edge, "type"));
+  
+  $.if(In(edgeTypeMap, fromId)).then($ => {
+    const toMap = $.let(Get(edgeTypeMap, fromId));
+    $.if(In(toMap, toId)).then($ => {
+      const edgeTypes = $.let(Get(toMap, toId));
+      $.pushLast(edgeTypes, edgeType);
+    }).else($ => {
+      $.insert(toMap, toId, NewArray(StringType, [edgeType]));
+    });
+  }).else($ => {
+    const newToMap = $.let(NewDict(StringType, ArrayType(StringType)));
+    $.insert(newToMap, toId, NewArray(StringType, [edgeType]));
+    $.insert(edgeTypeMap, fromId, newToMap);
+  });
+});
+```
+
+**Import Organization:**
+```typescript
+// Correct import patterns
+import { DictType, Procedure } from "@elaraai/core";  // Core classes
+import { ArrayType, IntegerType, StringType } from "@elaraai/core";  // Types
+import { Add, Get, In, NewDict } from "@elaraai/core";  // Operations
+```
+
+### Procedure Naming Conventions
+
+**Use descriptive prefixes that indicate behavior:**
+- `graph_bfs` / `graph_dfs` - Basic algorithms returning node IDs
+- `graph_tracked_bfs` / `graph_tracked_dfs` - Enhanced with metadata tracking
+- `graph_subgraphs` - Extracts multiple subgraphs
+- `graph_network_extraction` - Specialized network discovery
+
+**Avoid generic terms:**
+- ❌ `enhanced_traversal` - Generic, unclear what's enhanced
+- ✅ `tracked_breadth_first` - Specific about what tracking is added
+- ❌ `advanced_analysis` - Vague
+- ✅ `type_aggregation` - Clear about the analysis type
+
+### Test Coverage Strategy
+
+**Comprehensive test scenarios for new procedures:**
+1. **Basic functionality** - Simple linear cases
+2. **Complex structures** - Diamonds, trees, cycles
+3. **Edge cases** - Empty graphs, single nodes, disconnected components
+4. **Edge type handling** - Multiple edges between same nodes
+5. **Real-world scenarios** - Manufacturing workflows, dependency chains
+6. **Performance characteristics** - Wide vs deep graphs
+
+**Example test naming:**
+```typescript
+const tracked_bfs_diamond_test = new UnitTestBuilder("tracked_bfs_diamond")
+const tracked_dfs_manufacturing_test = new UnitTestBuilder("tracked_dfs_manufacturing")
+const tracked_bfs_multi_edges_test = new UnitTestBuilder("tracked_bfs_multi_edges")
+```
+
+### Critical Production Stress Tests
+
+**ALWAYS include these test scenarios for production readiness:**
+
+1. **Infinite Loop Prevention**
+```typescript
+// CRITICAL: Test actual cycles (not just self-loops)
+const cycle_test = new UnitTestBuilder("procedure_cycle")
+  .test({
+    nodes: [{"A", "B", "C"}],
+    edges: [A→B, B→C, C→A],  // Real cycle
+    source_node_id: "A"
+  }, expected_result);
+```
+
+2. **Invalid Input Handling**
+```typescript
+// Start node doesn't exist
+.test({ nodes: [...], edges: [...], source_node_id: "NONEXISTENT" }, [])
+
+// Dangling edges (reference missing nodes)
+.test({ 
+  nodes: [A, B], 
+  edges: [A→B, A→MISSING, GHOST→B], 
+  source_node_id: "A" 
+}, expected_valid_only)
+```
+
+3. **Data Quality Issues**
+```typescript
+// Duplicate edges
+.test({
+  edges: [A→B, A→B, A→B]  // Same edge multiple times
+}, handle_gracefully)
+
+// Empty graph edge cases
+.test({ nodes: [], edges: [], source_node_id: "any" }, [])
+```
+
+**Critical Bug Pattern Found:**
+```typescript
+// ❌ INFINITE LOOP BUG - Missing visited check in main loop
+$.while(Greater(Size(queue), Const(0n)), $ => {
+  const current = $.let(Get(queue, Const(0n)));
+  $.deleteFirst(queue);
+  // Missing: $.if(Not(In(visited, current))).then($ => { ... });
+});
+
+// ✅ CORRECT - Always check visited in main loop
+$.while(Greater(Size(queue), Const(0n)), $ => {
+  const current = $.let(Get(queue, Const(0n)));
+  $.deleteFirst(queue);
+  
+  $.if(Not(In(visited, current))).then($ => {  // CRITICAL
+    $.insert(visited, current);
+    // ... rest of processing
+  });
+});
+```
 
 ## Debugging and Logging
 

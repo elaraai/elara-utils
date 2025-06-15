@@ -22,7 +22,7 @@ const path_membership_basic_test = new UnitTestBuilder("path_membership_basic")
         { from: "B", to: "D", type: "transfer" },
         { from: "C", to: "D", type: "connect" }
       ],
-      startId: "A",
+      source_node_id: "A",
       endId: "D"
     },
     [
@@ -53,7 +53,7 @@ const path_membership_complex_test = new UnitTestBuilder("path_membership_comple
         { from: "B", to: "E", type: "direct" },
         { from: "D", to: "E", type: "merge" }
       ],
-      startId: "A",
+      source_node_id: "A",
       endId: "E"
     },
     [

@@ -113,7 +113,7 @@ export const graph_path_statistics = new Procedure("graph_path_statistics")
     $.if(Greater(Size(sourceNodes), Const(0n))).then($ => {
       $.forArray(sourceNodes, ($, sourceId) => {
         // Use BFS to get all reachable nodes from this source
-        const traversalResult = $.let(procs.graph_bfs(Struct({ nodes, edges, startId: sourceId })));
+        const traversalResult = $.let(procs.graph_bfs(Struct({ nodes, edges, source_node_id: sourceId })));
         const reachableCount = $.let(Size(traversalResult));
         
         // Connectivity metrics: total reachable nodes and spanning tree size

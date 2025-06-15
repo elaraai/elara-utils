@@ -21,7 +21,7 @@ const enhanced_bfs_test = new UnitTestBuilder("enhanced_bfs")
         { from: "A", to: "C", type: "process" },
         { from: "B", to: "D", type: "transfer" }
       ],
-      startId: "A",
+      source_node_id: "A",
       useBFS: true
     },
     [
@@ -48,7 +48,7 @@ const enhanced_dfs_test = new UnitTestBuilder("enhanced_dfs")
         { from: "A", to: "C", type: "process" },
         { from: "B", to: "D", type: "transfer" }
       ],
-      startId: "A",
+      source_node_id: "A",
       useBFS: false
     },
     [

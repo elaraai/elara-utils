@@ -53,17 +53,17 @@ import {
  * 
  * @param nodes Array of graph nodes (used for initialization)
  * @param edges Array of weighted edges with from, to, and weight properties
- * @param startId ID of the starting node
+ * @param source_node_id ID of the starting node
  * @param endId ID of the target node
  * @returns Shortest path result with path array and total cost
  */
 export const graph_shortest_path = new Procedure("graph_shortest_path")
   .input("nodes", ArrayType(GraphNode))
   .input("edges", ArrayType(GraphWeightedEdge))
-  .input("startId", StringType)
+  .input("source_node_id", StringType)
   .input("endId", StringType)
   .output(GraphShortestPathResult)
-  .body(($, { nodes, edges, startId, endId }) => {
+  .body(($, { nodes, edges, source_node_id, endId }) => {
     // Build weighted adjacency list
     const adjacencyList = $.let(NewDict(StringType, ArrayType(StructType({
       to: StringType,
@@ -100,7 +100,7 @@ export const graph_shortest_path = new Procedure("graph_shortest_path")
     });
 
     // Set start distance to 0
-    $.insertOrUpdate(distances, startId, Const(0.0));
+    $.insertOrUpdate(distances, source_node_id, Const(0.0));
 
     // Dijkstra's algorithm
     $.while(Greater(Size(unvisited), Const(0n)), $ => {
