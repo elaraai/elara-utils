@@ -293,8 +293,11 @@ export const graph_validate = new Procedure("graph_validate")
       }));
     });
     
-    // Analyze problematic edge patterns
-    const edgeTypeProblems = $.let(NewDict(StringType, StructType({
+    // Analyze problematic edge patterns using proper nested structure
+    // Track edge patterns using a temporary lookup structure
+    const edgePatternLookup = $.let(NewDict(StringType, StructType({
+      from_type: StringType,
+      to_type: StringType,
       valid_count: IntegerType,
       dangling_count: IntegerType
     })));
@@ -305,14 +308,18 @@ export const graph_validate = new Procedure("graph_validate")
       const toId = $.let(GetField(edge, "to"));
       const fromType = $.let(Get(nodeTypeMap, fromId, Const("unknown")));
       const toType = $.let(Get(nodeTypeMap, toId, Const("unknown")));
-      const edgePattern = $.let(StringJoin([fromType, Const("->"), toType]));
+      const patternKey = $.let(StringJoin([fromType, Const("->"), toType]));
       
-      const current = $.let(Get(edgeTypeProblems, edgePattern, Struct({
+      const current = $.let(Get(edgePatternLookup, patternKey, Struct({
+        from_type: fromType,
+        to_type: toType,
         valid_count: Const(0n),
         dangling_count: Const(0n)
       })));
       const validCount = $.let(GetField(current, "valid_count"));
-      $.insertOrUpdate(edgeTypeProblems, edgePattern, Struct({
+      $.insertOrUpdate(edgePatternLookup, patternKey, Struct({
+        from_type: fromType,
+        to_type: toType,
         valid_count: Add(validCount, Const(1n)),
         dangling_count: GetField(current, "dangling_count")
       }));
@@ -328,14 +335,18 @@ export const graph_validate = new Procedure("graph_validate")
       $.if(Not(fromExists)).then($ => {
         $.if(toExists).then($ => {
           const toType = $.let(Get(nodeTypeMap, toId, Const("unknown")));
-          const edgePattern = $.let(StringJoin([Const("unknown"), Const("->"), toType]));
+          const patternKey = $.let(StringJoin([Const("unknown"), Const("->"), toType]));
           
-          const current = $.let(Get(edgeTypeProblems, edgePattern, Struct({
+          const current = $.let(Get(edgePatternLookup, patternKey, Struct({
+            from_type: Const("unknown"),
+            to_type: toType,
             valid_count: Const(0n),
             dangling_count: Const(0n)
           })));
           const danglingCount = $.let(GetField(current, "dangling_count"));
-          $.insertOrUpdate(edgeTypeProblems, edgePattern, Struct({
+          $.insertOrUpdate(edgePatternLookup, patternKey, Struct({
+            from_type: Const("unknown"),
+            to_type: toType,
             valid_count: GetField(current, "valid_count"),
             dangling_count: Add(danglingCount, Const(1n))
           }));
@@ -343,14 +354,18 @@ export const graph_validate = new Procedure("graph_validate")
       }).else($ => {
         $.if(Not(toExists)).then($ => {
           const fromType = $.let(Get(nodeTypeMap, fromId, Const("unknown")));
-          const edgePattern = $.let(StringJoin([fromType, Const("->"), Const("unknown")]));
+          const patternKey = $.let(StringJoin([fromType, Const("->"), Const("unknown")]));
           
-          const current = $.let(Get(edgeTypeProblems, edgePattern, Struct({
+          const current = $.let(Get(edgePatternLookup, patternKey, Struct({
+            from_type: fromType,
+            to_type: Const("unknown"),
             valid_count: Const(0n),
             dangling_count: Const(0n)
           })));
           const danglingCount = $.let(GetField(current, "dangling_count"));
-          $.insertOrUpdate(edgeTypeProblems, edgePattern, Struct({
+          $.insertOrUpdate(edgePatternLookup, patternKey, Struct({
+            from_type: fromType,
+            to_type: Const("unknown"),
             valid_count: GetField(current, "valid_count"),
             dangling_count: Add(danglingCount, Const(1n))
           }));
@@ -358,7 +373,7 @@ export const graph_validate = new Procedure("graph_validate")
       });
     });
     
-    // Build problematic edge patterns array
+    // Build problematic edge patterns array from lookup structure
     const problematicEdgePatterns = $.let(NewArray(StructType({
       from_type: StringType,
       to_type: StringType,
@@ -367,15 +382,17 @@ export const graph_validate = new Procedure("graph_validate")
       failure_rate: FloatType
     })));
     
-    $.forDict(edgeTypeProblems, ($, patternInfo, _edgePattern) => {
+    $.forDict(edgePatternLookup, ($, patternInfo, _patternKey) => {
+      const fromType = $.let(GetField(patternInfo, "from_type"));
+      const toType = $.let(GetField(patternInfo, "to_type"));
       const validCount = $.let(GetField(patternInfo, "valid_count"));
       const danglingCount = $.let(GetField(patternInfo, "dangling_count"));
       const totalCount = $.let(Add(validCount, danglingCount));
       const failureRate = $.let(Multiply(DivideSafe(danglingCount, totalCount), Const(100.0)));
       
       $.pushLast(problematicEdgePatterns, Struct({
-        from_type: Const("pattern"), // Simplified - would need string operations for proper parsing
-        to_type: Const("analysis"),  // Simplified - would need string operations for proper parsing
+        from_type: fromType,
+        to_type: toType,
         dangling_count: danglingCount,
         valid_count: validCount,
         failure_rate: failureRate

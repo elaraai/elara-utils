@@ -13,8 +13,8 @@ const validate_clean_test = new UnitTestBuilder("validate_clean")
         { id: "C", type: "end" }
       ],
       edges: [
-        { from: "A", to: "B" },
-        { from: "B", to: "C" }
+        { from: "A", to: "B", type: "flow" },
+        { from: "B", to: "C", type: "flow" }
       ]
     },
     {
@@ -35,8 +35,8 @@ const validate_clean_test = new UnitTestBuilder("validate_clean")
         { node_type: "start", orphaned_count: 0n, total_count: 1n, orphaned_percentage: 0.0 }
       ],
       problematic_edge_patterns: [
-        { from_type: "pattern", to_type: "analysis", dangling_count: 0n, valid_count: 1n, failure_rate: 0.0 },
-        { from_type: "pattern", to_type: "analysis", dangling_count: 0n, valid_count: 1n, failure_rate: 0.0 }
+        { from_type: "middle", to_type: "end", dangling_count: 0n, valid_count: 1n, failure_rate: 0.0 },
+        { from_type: "start", to_type: "middle", dangling_count: 0n, valid_count: 1n, failure_rate: 0.0 }
       ]
     }
   );
@@ -54,8 +54,8 @@ const validate_duplicate_nodes_test = new UnitTestBuilder("validate_duplicate_no
         { id: "C", type: "end" }
       ],
       edges: [
-        { from: "A", to: "B" },
-        { from: "B", to: "C" }
+        { from: "A", to: "B", type: "flow" },
+        { from: "B", to: "C", type: "flow" }
       ]
     },
     {
@@ -76,8 +76,8 @@ const validate_duplicate_nodes_test = new UnitTestBuilder("validate_duplicate_no
         { node_type: "start", orphaned_count: 0n, total_count: 1n, orphaned_percentage: 0.0 }
       ],
       problematic_edge_patterns: [
-        { from_type: "pattern", to_type: "analysis", dangling_count: 0n, valid_count: 1n, failure_rate: 0.0 },
-        { from_type: "pattern", to_type: "analysis", dangling_count: 0n, valid_count: 1n, failure_rate: 0.0 }
+        { from_type: "middle", to_type: "end", dangling_count: 0n, valid_count: 1n, failure_rate: 0.0 },
+        { from_type: "start", to_type: "middle", dangling_count: 0n, valid_count: 1n, failure_rate: 0.0 }
       ]
     }
   );
@@ -93,11 +93,11 @@ const validate_duplicate_edges_test = new UnitTestBuilder("validate_duplicate_ed
         { id: "C", type: "end" }
       ],
       edges: [
-        { from: "A", to: "B" },
-        { from: "A", to: "B" }, // Duplicate
-        { from: "B", to: "C" },
-        { from: "B", to: "C" }, // Duplicate
-        { from: "B", to: "C" }  // Triple
+        { from: "A", to: "B", type: "flow" },
+        { from: "A", to: "B", type: "flow" }, // Duplicate
+        { from: "B", to: "C", type: "flow" },
+        { from: "B", to: "C", type: "flow" }, // Duplicate
+        { from: "B", to: "C", type: "flow" }  // Triple
       ]
     },
     {
@@ -118,8 +118,8 @@ const validate_duplicate_edges_test = new UnitTestBuilder("validate_duplicate_ed
         { node_type: "start", orphaned_count: 0n, total_count: 1n, orphaned_percentage: 0.0 }
       ],
       problematic_edge_patterns: [
-        { from_type: "pattern", to_type: "analysis", dangling_count: 0n, valid_count: 1n, failure_rate: 0.0 },
-        { from_type: "pattern", to_type: "analysis", dangling_count: 0n, valid_count: 1n, failure_rate: 0.0 }
+        { from_type: "middle", to_type: "end", dangling_count: 0n, valid_count: 1n, failure_rate: 0.0 },
+        { from_type: "start", to_type: "middle", dangling_count: 0n, valid_count: 1n, failure_rate: 0.0 }
       ]
     }
   );
@@ -134,10 +134,10 @@ const validate_dangling_edges_test = new UnitTestBuilder("validate_dangling_edge
         { id: "B", type: "middle" }
       ],
       edges: [
-        { from: "A", to: "B" },        // Valid
-        { from: "A", to: "C" },        // Dangling: C doesn't exist
-        { from: "D", to: "B" },        // Dangling: D doesn't exist
-        { from: "E", to: "F" }         // Dangling: Both E and F don't exist
+        { from: "A", to: "B", type: "flow" },        // Valid
+        { from: "A", to: "C", type: "flow" },        // Dangling: C doesn't exist
+        { from: "D", to: "B", type: "flow" },        // Dangling: D doesn't exist
+        { from: "E", to: "F", type: "flow" }         // Dangling: Both E and F don't exist
       ]
     },
     {
@@ -157,9 +157,9 @@ const validate_dangling_edges_test = new UnitTestBuilder("validate_dangling_edge
         { node_type: "start", orphaned_count: 0n, total_count: 1n, orphaned_percentage: 0.0 }
       ],
       problematic_edge_patterns: [
-        { from_type: "pattern", to_type: "analysis", dangling_count: 0n, valid_count: 1n, failure_rate: 0.0 },
-        { from_type: "pattern", to_type: "analysis", dangling_count: 1n, valid_count: 0n, failure_rate: 100.0 },
-        { from_type: "pattern", to_type: "analysis", dangling_count: 1n, valid_count: 0n, failure_rate: 100.0 }
+        { from_type: "start", to_type: "middle", dangling_count: 0n, valid_count: 1n, failure_rate: 0.0 },
+        { from_type: "start", to_type: "unknown", dangling_count: 1n, valid_count: 0n, failure_rate: 100.0 },
+        { from_type: "unknown", to_type: "middle", dangling_count: 1n, valid_count: 0n, failure_rate: 100.0 }
       ]
     }
   );
@@ -177,8 +177,8 @@ const validate_orphaned_nodes_test = new UnitTestBuilder("validate_orphaned_node
         { id: "E", type: "orphan2" }  // Not referenced by any edges
       ],
       edges: [
-        { from: "A", to: "B" },
-        { from: "B", to: "C" }
+        { from: "A", to: "B", type: "flow" },
+        { from: "B", to: "C", type: "flow" }
       ]
     },
     {
@@ -201,8 +201,8 @@ const validate_orphaned_nodes_test = new UnitTestBuilder("validate_orphaned_node
         { node_type: "start", orphaned_count: 0n, total_count: 1n, orphaned_percentage: 0.0 }
       ],
       problematic_edge_patterns: [
-        { from_type: "pattern", to_type: "analysis", dangling_count: 0n, valid_count: 1n, failure_rate: 0.0 },
-        { from_type: "pattern", to_type: "analysis", dangling_count: 0n, valid_count: 1n, failure_rate: 0.0 }
+        { from_type: "middle", to_type: "end", dangling_count: 0n, valid_count: 1n, failure_rate: 0.0 },
+        { from_type: "start", to_type: "middle", dangling_count: 0n, valid_count: 1n, failure_rate: 0.0 }
       ]
     }
   );
@@ -245,11 +245,11 @@ const validate_complex_issues_test = new UnitTestBuilder("validate_complex_issue
         { id: "D", type: "orphan" } // Orphaned
       ],
       edges: [
-        { from: "A", to: "B" },
-        { from: "A", to: "B" }, // Duplicate edge
-        { from: "B", to: "C" },
-        { from: "B", to: "E" }, // Dangling: E doesn't exist
-        { from: "F", to: "C" }  // Dangling: F doesn't exist
+        { from: "A", to: "B", type: "flow" },
+        { from: "A", to: "B", type: "flow" }, // Duplicate edge
+        { from: "B", to: "C", type: "flow" },
+        { from: "B", to: "E", type: "flow" }, // Dangling: E doesn't exist
+        { from: "F", to: "C", type: "flow" }  // Dangling: F doesn't exist
       ]
     },
     {
@@ -271,10 +271,10 @@ const validate_complex_issues_test = new UnitTestBuilder("validate_complex_issue
         { node_type: "start", orphaned_count: 0n, total_count: 1n, orphaned_percentage: 0.0 }
       ],
       problematic_edge_patterns: [
-        { from_type: "pattern", to_type: "analysis", dangling_count: 0n, valid_count: 1n, failure_rate: 0.0 },
-        { from_type: "pattern", to_type: "analysis", dangling_count: 1n, valid_count: 0n, failure_rate: 100.0 },
-        { from_type: "pattern", to_type: "analysis", dangling_count: 0n, valid_count: 1n, failure_rate: 0.0 },
-        { from_type: "pattern", to_type: "analysis", dangling_count: 1n, valid_count: 0n, failure_rate: 100.0 }
+        { from_type: "middle", to_type: "end", dangling_count: 0n, valid_count: 1n, failure_rate: 0.0 },
+        { from_type: "middle", to_type: "unknown", dangling_count: 1n, valid_count: 0n, failure_rate: 100.0 },
+        { from_type: "start", to_type: "middle", dangling_count: 0n, valid_count: 1n, failure_rate: 0.0 },
+        { from_type: "unknown", to_type: "end", dangling_count: 1n, valid_count: 0n, failure_rate: 100.0 }
       ]
     }
   );
@@ -294,9 +294,9 @@ const validate_special_char_ids_test = new UnitTestBuilder("validate_special_cha
         { id: "", type: "empty" }            // Empty string (already tested but included)
       ],
       edges: [
-        { from: ":", to: "\n\t" },
-        { from: "🚀", to: "null" },
-        { from: "null", to: "" }
+        { from: ":", to: "\n\t", type: "flow" },
+        { from: "🚀", to: "null", type: "flow" },
+        { from: "null", to: "", type: "flow" }
       ]
     },
     {
@@ -319,9 +319,9 @@ const validate_special_char_ids_test = new UnitTestBuilder("validate_special_cha
         { node_type: "whitespace", orphaned_count: 0n, total_count: 1n, orphaned_percentage: 0.0 }
       ],
       problematic_edge_patterns: [
-        { from_type: "pattern", to_type: "analysis", dangling_count: 0n, valid_count: 1n, failure_rate: 0.0 },
-        { from_type: "pattern", to_type: "analysis", dangling_count: 0n, valid_count: 1n, failure_rate: 0.0 },
-        { from_type: "pattern", to_type: "analysis", dangling_count: 0n, valid_count: 1n, failure_rate: 0.0 }
+        { from_type: "keyword", to_type: "empty", dangling_count: 0n, valid_count: 1n, failure_rate: 0.0 },
+        { from_type: "separator", to_type: "whitespace", dangling_count: 0n, valid_count: 1n, failure_rate: 0.0 },
+        { from_type: "unicode", to_type: "keyword", dangling_count: 0n, valid_count: 1n, failure_rate: 0.0 }
       ]
     }
   );
@@ -372,10 +372,10 @@ const validate_hub_pattern_test = new UnitTestBuilder("validate_hub_pattern")
         { id: "D", type: "spoke" }
       ],
       edges: [
-        { from: "A", to: "HUB" },
-        { from: "B", to: "HUB" },
-        { from: "C", to: "HUB" },
-        { from: "D", to: "HUB" }
+        { from: "A", to: "HUB", type: "flow" },
+        { from: "B", to: "HUB", type: "flow" },
+        { from: "C", to: "HUB", type: "flow" },
+        { from: "D", to: "HUB", type: "flow" }
       ]
     },
     {
@@ -395,7 +395,7 @@ const validate_hub_pattern_test = new UnitTestBuilder("validate_hub_pattern")
         { node_type: "spoke", orphaned_count: 0n, total_count: 4n, orphaned_percentage: 0.0 }
       ],
       problematic_edge_patterns: [
-        { from_type: "pattern", to_type: "analysis", dangling_count: 0n, valid_count: 4n, failure_rate: 0.0 }
+        { from_type: "spoke", to_type: "central", dangling_count: 0n, valid_count: 4n, failure_rate: 0.0 }
       ]
     }
   );
@@ -413,10 +413,10 @@ const validate_star_pattern_test = new UnitTestBuilder("validate_star_pattern")
         { id: "D", type: "target" }
       ],
       edges: [
-        { from: "CENTER", to: "A" },
-        { from: "CENTER", to: "B" },
-        { from: "CENTER", to: "C" },
-        { from: "CENTER", to: "D" }
+        { from: "CENTER", to: "A", type: "flow" },
+        { from: "CENTER", to: "B", type: "flow" },
+        { from: "CENTER", to: "C", type: "flow" },
+        { from: "CENTER", to: "D", type: "flow" }
       ]
     },
     {
@@ -436,7 +436,7 @@ const validate_star_pattern_test = new UnitTestBuilder("validate_star_pattern")
         { node_type: "target", orphaned_count: 0n, total_count: 4n, orphaned_percentage: 0.0 }
       ],
       problematic_edge_patterns: [
-        { from_type: "pattern", to_type: "analysis", dangling_count: 0n, valid_count: 4n, failure_rate: 0.0 }
+        { from_type: "source", to_type: "target", dangling_count: 0n, valid_count: 4n, failure_rate: 0.0 }
       ]
     }
   );
@@ -454,7 +454,7 @@ const validate_massive_duplicates_test = new UnitTestBuilder("validate_massive_d
         { id: "B", type: "unique" }
       ],
       edges: [
-        { from: "DUPLICATE", to: "B" }
+        { from: "DUPLICATE", to: "B", type: "flow" }
       ]
     },
     {
@@ -474,7 +474,7 @@ const validate_massive_duplicates_test = new UnitTestBuilder("validate_massive_d
         { node_type: "unique", orphaned_count: 0n, total_count: 1n, orphaned_percentage: 0.0 }
       ],
       problematic_edge_patterns: [
-        { from_type: "pattern", to_type: "analysis", dangling_count: 0n, valid_count: 1n, failure_rate: 0.0 }
+        { from_type: "type_0", to_type: "unique", dangling_count: 0n, valid_count: 1n, failure_rate: 0.0 }
       ]
     }
   );
@@ -491,14 +491,14 @@ const validate_dense_self_loops_test = new UnitTestBuilder("validate_dense_self_
       ],
       edges: [
         // Multiple self-loops on A
-        { from: "A", to: "A" },
-        { from: "A", to: "A" },
-        { from: "A", to: "A" },
+        { from: "A", to: "A", type: "self_loop" },
+        { from: "A", to: "A", type: "self_loop" },
+        { from: "A", to: "A", type: "self_loop" },
         // Multiple self-loops on B  
-        { from: "B", to: "B" },
-        { from: "B", to: "B" },
+        { from: "B", to: "B", type: "self_loop" },
+        { from: "B", to: "B", type: "self_loop" },
         // Normal edge
-        { from: "A", to: "C" }
+        { from: "A", to: "C", type: "flow" }
       ]
     },
     {
@@ -518,8 +518,8 @@ const validate_dense_self_loops_test = new UnitTestBuilder("validate_dense_self_
         { node_type: "self_ref", orphaned_count: 0n, total_count: 2n, orphaned_percentage: 0.0 }
       ],
       problematic_edge_patterns: [
-        { from_type: "pattern", to_type: "analysis", dangling_count: 0n, valid_count: 1n, failure_rate: 0.0 },
-        { from_type: "pattern", to_type: "analysis", dangling_count: 0n, valid_count: 2n, failure_rate: 0.0 }
+        { from_type: "self_ref", to_type: "normal", dangling_count: 0n, valid_count: 1n, failure_rate: 0.0 },
+        { from_type: "self_ref", to_type: "self_ref", dangling_count: 0n, valid_count: 2n, failure_rate: 0.0 }
       ]
     }
   );
@@ -540,10 +540,10 @@ const validate_asymmetric_edges_test = new UnitTestBuilder("validate_asymmetric_
       ],
       edges: [
         // All edges go left->right, none go right->left (asymmetric)
-        { from: "L1", to: "R1" },
-        { from: "L1", to: "R2" },
-        { from: "L2", to: "R1" },
-        { from: "L2", to: "R2" }
+        { from: "L1", to: "R1", type: "flow" },
+        { from: "L1", to: "R2", type: "flow" },
+        { from: "L2", to: "R1", type: "flow" },
+        { from: "L2", to: "R2", type: "flow" }
         // ISO has no edges (isolated node)
       ]
     },
@@ -565,7 +565,7 @@ const validate_asymmetric_edges_test = new UnitTestBuilder("validate_asymmetric_
         { node_type: "right", orphaned_count: 0n, total_count: 2n, orphaned_percentage: 0.0 }
       ],
       problematic_edge_patterns: [
-        { from_type: "pattern", to_type: "analysis", dangling_count: 0n, valid_count: 4n, failure_rate: 0.0 }
+        { from_type: "left", to_type: "right", dangling_count: 0n, valid_count: 4n, failure_rate: 0.0 }
       ]
     }
   );

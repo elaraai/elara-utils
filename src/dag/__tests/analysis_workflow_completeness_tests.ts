@@ -13,8 +13,8 @@ const workflow_completeness_complete_test = new UnitTestBuilder("workflow_comple
         { id: "C", type: "output" }
       ],
       edges: [
-        { from: "A", to: "B" },
-        { from: "B", to: "C" }
+        { from: "A", to: "B", type: "flow" },
+        { from: "B", to: "C", type: "process" }
       ],
       workflow_patterns: [
         {
@@ -49,7 +49,7 @@ const workflow_completeness_incomplete_test = new UnitTestBuilder("workflow_comp
         { id: "C", type: "output" }
       ],
       edges: [
-        { from: "A", to: "B" }
+        { from: "A", to: "B", type: "flow" }
         // Missing B -> C connection
       ],
       workflow_patterns: [
@@ -86,9 +86,9 @@ const workflow_completeness_multiple_patterns_test = new UnitTestBuilder("workfl
         { id: "D", type: "validation" }
       ],
       edges: [
-        { from: "A", to: "B" },
-        { from: "B", to: "C" },
-        { from: "A", to: "D" }
+        { from: "A", to: "B", type: "flow" },
+        { from: "B", to: "C", type: "process" },
+        { from: "A", to: "D", type: "validate" }
       ],
       workflow_patterns: [
         {
@@ -135,10 +135,10 @@ const workflow_completeness_multiple_types_test = new UnitTestBuilder("workflow_
         { id: "C2", type: "output2" }
       ],
       edges: [
-        { from: "A1", to: "B" },
-        { from: "A2", to: "B" },
-        { from: "B", to: "C1" },
-        { from: "B", to: "C2" }
+        { from: "A1", to: "B", type: "input" },
+        { from: "A2", to: "B", type: "input" },
+        { from: "B", to: "C1", type: "output" },
+        { from: "B", to: "C2", type: "output" }
       ],
       workflow_patterns: [
         {
@@ -175,8 +175,8 @@ const workflow_completeness_disconnected_test = new UnitTestBuilder("workflow_co
         { id: "C2", type: "output" }  // Isolated output
       ],
       edges: [
-        { from: "A1", to: "B1" },
-        { from: "B1", to: "C1" }
+        { from: "A1", to: "B1", type: "flow" },
+        { from: "B1", to: "C1", type: "process" }
         // A2 and C2 are disconnected
       ],
       workflow_patterns: [
@@ -211,7 +211,7 @@ const workflow_completeness_empty_patterns_test = new UnitTestBuilder("workflow_
         { id: "B", type: "output" }
       ],
       edges: [
-        { from: "A", to: "B" }
+        { from: "A", to: "B", type: "direct" }
       ],
       workflow_patterns: []
     },

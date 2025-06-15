@@ -167,17 +167,21 @@ export const graph_cycle_detection = new Procedure("graph_cycle_detection")
               
               // Process neighbors with early termination
               $.forArray(neighbors, ($, neighbor, _neighborIndex, neighborLabel) => {
-                const neighborColor = $.let(Get(color, neighbor));
-                
-                $.if(Equal(neighborColor, Const(1n))).then($ => { // gray = back edge = cycle
-                  $.assign(hasCycle, Const(true));
-                  $.pushLast(cycleNodes, neighbor);
-                  $.pushLast(cycleNodes, current);
-                  $.break(neighborLabel); // Break out of neighbor processing immediately
-                }).elseIf(Equal(neighborColor, Const(0n))).then($ => { // white
-                  $.pushLast(stack, neighbor);
+                // Only process neighbors that exist in our color dictionary (valid nodes)
+                $.if(In(color, neighbor)).then($ => {
+                  const neighborColor = $.let(Get(color, neighbor));
+                  
+                  $.if(Equal(neighborColor, Const(1n))).then($ => { // gray = back edge = cycle
+                    $.assign(hasCycle, Const(true));
+                    $.pushLast(cycleNodes, neighbor);
+                    $.pushLast(cycleNodes, current);
+                    $.break(neighborLabel); // Break out of neighbor processing immediately
+                  }).elseIf(Equal(neighborColor, Const(0n))).then($ => { // white
+                    $.pushLast(stack, neighbor);
+                  });
+                  // Skip black nodes (already processed) - no action needed
                 });
-                // Skip black nodes (already processed) - no action needed
+                // Skip neighbors that don't exist in nodes array (dangling edges)
               });
             });
           }).elseIf(Equal(currentColor, Const(1n))).then($ => { // gray

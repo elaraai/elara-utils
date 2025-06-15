@@ -16,9 +16,9 @@ const type_aggregation_basic_test = new UnitTestBuilder("type_aggregation_basic"
         { id: "D", type: "op3" }
       ],
       edges: [
-        { from: "A", to: "B" },
-        { from: "A", to: "C" },
-        { from: "C", to: "B" }
+        { from: "A", to: "B", type: "process" },
+        { from: "A", to: "C", type: "process" },
+        { from: "C", to: "B", type: "process" }
       ]
     },
     {
@@ -28,8 +28,8 @@ const type_aggregation_basic_test = new UnitTestBuilder("type_aggregation_basic"
         // Note: op3 is excluded because node D doesn't participate in any edges
       ],
       aggregate_edges: [
-        { from_type: "op1", to_type: "op1", transition_count: 1n, transition_probability: 0.3333333333333333 },
-        { from_type: "op1", to_type: "op2", transition_count: 2n, transition_probability: 0.6666666666666666 }
+        { from_type: "op1", to_type: "op1", edge_type: "process", transition_count: 1n, transition_probability: 0.3333333333333333 },
+        { from_type: "op1", to_type: "op2", edge_type: "process", transition_count: 2n, transition_probability: 0.6666666666666666 }
       ]
     }
   );
@@ -48,12 +48,12 @@ const type_aggregation_complex_test = new UnitTestBuilder("type_aggregation_comp
         { id: "F", type: "output" }
       ],
       edges: [
-        { from: "A", to: "B" },
-        { from: "A", to: "C" },
-        { from: "B", to: "D" },
-        { from: "B", to: "E" },
-        { from: "C", to: "E" },
-        { from: "E", to: "F" }
+        { from: "A", to: "B", type: "input_to_process" },
+        { from: "A", to: "C", type: "input_to_process" },
+        { from: "B", to: "D", type: "process_to_output" },
+        { from: "B", to: "E", type: "process_to_process" },
+        { from: "C", to: "E", type: "process_to_process" },
+        { from: "E", to: "F", type: "process_to_output" }
       ]
     },
     {
@@ -63,9 +63,9 @@ const type_aggregation_complex_test = new UnitTestBuilder("type_aggregation_comp
         { type: "process", node_count: 3n }
       ],
       aggregate_edges: [
-        { from_type: "input", to_type: "process", transition_count: 2n, transition_probability: 1.0 },
-        { from_type: "process", to_type: "output", transition_count: 2n, transition_probability: 0.5 },
-        { from_type: "process", to_type: "process", transition_count: 2n, transition_probability: 0.5 }
+        { from_type: "input", to_type: "process", edge_type: "input_to_process", transition_count: 2n, transition_probability: 1.0 },
+        { from_type: "process", to_type: "output", edge_type: "process_to_output", transition_count: 2n, transition_probability: 0.5 },
+        { from_type: "process", to_type: "process", edge_type: "process_to_process", transition_count: 2n, transition_probability: 0.5 }
       ]
     }
   );
@@ -81,9 +81,9 @@ const type_aggregation_single_type_test = new UnitTestBuilder("type_aggregation_
         { id: "C", type: "worker" }
       ],
       edges: [
-        { from: "A", to: "B" },
-        { from: "B", to: "C" },
-        { from: "C", to: "A" }
+        { from: "A", to: "B", type: "worker_flow" },
+        { from: "B", to: "C", type: "worker_flow" },
+        { from: "C", to: "A", type: "worker_flow" }
       ]
     },
     {
@@ -91,7 +91,7 @@ const type_aggregation_single_type_test = new UnitTestBuilder("type_aggregation_
         { type: "worker", node_count: 3n }
       ],
       aggregate_edges: [
-        { from_type: "worker", to_type: "worker", transition_count: 3n, transition_probability: 1.0 }
+        { from_type: "worker", to_type: "worker", edge_type: "worker_flow", transition_count: 3n, transition_probability: 1.0 }
       ]
     }
   );
@@ -143,8 +143,8 @@ const type_aggregation_orphaned_nodes_test = new UnitTestBuilder("type_aggregati
         { id: "E", type: "connected" }
       ],
       edges: [
-        { from: "A", to: "B" },
-        { from: "B", to: "E" }
+        { from: "A", to: "B", type: "flow" },
+        { from: "B", to: "E", type: "flow" }
         // C and D are orphaned (not in any edges)
       ]
     },
@@ -154,7 +154,7 @@ const type_aggregation_orphaned_nodes_test = new UnitTestBuilder("type_aggregati
         // orphaned type is excluded since those nodes don't participate in edges
       ],
       aggregate_edges: [
-        { from_type: "connected", to_type: "connected", transition_count: 2n, transition_probability: 1.0 }
+        { from_type: "connected", to_type: "connected", edge_type: "flow", transition_count: 2n, transition_probability: 1.0 }
       ]
     }
   );
@@ -173,8 +173,8 @@ const type_aggregation_mixed_components_test = new UnitTestBuilder("type_aggrega
         { id: "F", type: "isolated" }
       ],
       edges: [
-        { from: "A", to: "B" }, // component1 connects to itself
-        { from: "C", to: "D" }  // component2 connects to itself
+        { from: "A", to: "B", type: "internal" }, // component1 connects to itself
+        { from: "C", to: "D", type: "internal" }  // component2 connects to itself
         // E and F are isolated (type "isolated" has no edges)
       ]
     },
@@ -185,8 +185,8 @@ const type_aggregation_mixed_components_test = new UnitTestBuilder("type_aggrega
         // isolated type is excluded
       ],
       aggregate_edges: [
-        { from_type: "component1", to_type: "component1", transition_count: 1n, transition_probability: 1.0 },
-        { from_type: "component2", to_type: "component2", transition_count: 1n, transition_probability: 1.0 }
+        { from_type: "component1", to_type: "component1", edge_type: "internal", transition_count: 1n, transition_probability: 1.0 },
+        { from_type: "component2", to_type: "component2", edge_type: "internal", transition_count: 1n, transition_probability: 1.0 }
       ]
     }
   );
@@ -204,8 +204,8 @@ const type_aggregation_source_nodes_test = new UnitTestBuilder("type_aggregation
         { id: "isolated", type: "isolated" }
       ],
       edges: [
-        { from: "source1", to: "sink1" },
-        { from: "source2", to: "sink2" }
+        { from: "source1", to: "sink1", type: "flow" },
+        { from: "source2", to: "sink2", type: "flow" }
         // isolated node has no edges
       ]
     },
@@ -216,7 +216,7 @@ const type_aggregation_source_nodes_test = new UnitTestBuilder("type_aggregation
         // isolated type is excluded
       ],
       aggregate_edges: [
-        { from_type: "source", to_type: "sink", transition_count: 2n, transition_probability: 1.0 }
+        { from_type: "source", to_type: "sink", edge_type: "flow", transition_count: 2n, transition_probability: 1.0 }
       ]
     }
   );
@@ -233,8 +233,8 @@ const type_aggregation_sink_nodes_test = new UnitTestBuilder("type_aggregation_s
         { id: "unconnected", type: "unconnected" }
       ],
       edges: [
-        { from: "input", to: "terminal1" },
-        { from: "input", to: "terminal2" }
+        { from: "input", to: "terminal1", type: "output" },
+        { from: "input", to: "terminal2", type: "output" }
         // unconnected node has no edges
       ]
     },
@@ -245,7 +245,7 @@ const type_aggregation_sink_nodes_test = new UnitTestBuilder("type_aggregation_s
         // unconnected type is excluded
       ],
       aggregate_edges: [
-        { from_type: "input", to_type: "terminal", transition_count: 2n, transition_probability: 1.0 }
+        { from_type: "input", to_type: "terminal", edge_type: "output", transition_count: 2n, transition_probability: 1.0 }
       ]
     }
   );
@@ -263,8 +263,8 @@ const type_aggregation_self_loop_with_orphans_test = new UnitTestBuilder("type_a
         { id: "orphan2", type: "orphaned" }
       ],
       edges: [
-        { from: "self_loop", to: "self_loop" }, // self-loop
-        { from: "normal1", to: "normal2" }
+        { from: "self_loop", to: "self_loop", type: "self_reference" }, // self-loop
+        { from: "normal1", to: "normal2", type: "normal_flow" }
         // orphan1 and orphan2 have no edges
       ]
     },
@@ -275,8 +275,8 @@ const type_aggregation_self_loop_with_orphans_test = new UnitTestBuilder("type_a
         // orphaned type is excluded
       ],
       aggregate_edges: [
-        { from_type: "normal", to_type: "normal", transition_count: 1n, transition_probability: 1.0 },
-        { from_type: "self_referencing", to_type: "self_referencing", transition_count: 1n, transition_probability: 1.0 }
+        { from_type: "normal", to_type: "normal", edge_type: "normal_flow", transition_count: 1n, transition_probability: 1.0 },
+        { from_type: "self_referencing", to_type: "self_referencing", edge_type: "self_reference", transition_count: 1n, transition_probability: 1.0 }
       ]
     }
   );
@@ -293,8 +293,8 @@ const type_aggregation_validation_pipeline_test = new UnitTestBuilder("type_aggr
         { id: "orphan", type: "orphan_type" } // This should be excluded
       ],
       edges: [
-        { from: "valid1", to: "valid2" },
-        { from: "valid2", to: "valid3" }
+        { from: "valid1", to: "valid2", type: "valid_transition" },
+        { from: "valid2", to: "valid3", type: "valid_transition" }
         // orphan node doesn't participate in any edges
       ]
     },
@@ -305,8 +305,8 @@ const type_aggregation_validation_pipeline_test = new UnitTestBuilder("type_aggr
         // orphan_type is excluded - this prevents the orphaned nodes issue
       ],
       aggregate_edges: [
-        { from_type: "valid_type", to_type: "another_valid", transition_count: 1n, transition_probability: 0.5 },
-        { from_type: "valid_type", to_type: "valid_type", transition_count: 1n, transition_probability: 0.5 }
+        { from_type: "valid_type", to_type: "another_valid", edge_type: "valid_transition", transition_count: 1n, transition_probability: 0.5 },
+        { from_type: "valid_type", to_type: "valid_type", edge_type: "valid_transition", transition_count: 1n, transition_probability: 0.5 }
       ]
     }
   );
@@ -326,8 +326,8 @@ const type_aggregation_multiple_orphaned_types_test = new UnitTestBuilder("type_
         { id: "orphan_c", type: "orphan_c" }
       ],
       edges: [
-        { from: "active1", to: "processor" },
-        { from: "active2", to: "processor" }
+        { from: "active1", to: "processor", type: "processing" },
+        { from: "active2", to: "processor", type: "processing" }
         // Multiple orphaned types: orphan_a, orphan_b, orphan_c
       ]
     },
@@ -338,7 +338,101 @@ const type_aggregation_multiple_orphaned_types_test = new UnitTestBuilder("type_
         // All orphan types (orphan_a, orphan_b, orphan_c) are excluded
       ],
       aggregate_edges: [
-        { from_type: "active", to_type: "processor", transition_count: 2n, transition_probability: 1.0 }
+        { from_type: "active", to_type: "processor", edge_type: "processing", transition_count: 2n, transition_probability: 1.0 }
+      ]
+    }
+  );
+
+// === NEW EDGE TYPE SPECIFIC TESTS ===
+
+// Test multiple edge types between same node types
+const type_aggregation_multiple_edge_types_test = new UnitTestBuilder("type_aggregation_multiple_edge_types")
+  .procedure(graph_aggregation_by_type)
+  .test(
+    {
+      nodes: [
+        { id: "A", type: "processing" },
+        { id: "B", type: "processing" },
+        { id: "C", type: "quality" }
+      ],
+      edges: [
+        { from: "A", to: "B", type: "material_flow" },
+        { from: "A", to: "B", type: "information_flow" },
+        { from: "A", to: "C", type: "quality_check" },
+        { from: "B", to: "C", type: "quality_check" }
+      ]
+    },
+    {
+      aggregate_nodes: [
+        { type: "processing", node_count: 2n },
+        { type: "quality", node_count: 1n }
+      ],
+      aggregate_edges: [
+        { from_type: "processing", to_type: "processing", edge_type: "information_flow", transition_count: 1n, transition_probability: 0.25 },
+        { from_type: "processing", to_type: "processing", edge_type: "material_flow", transition_count: 1n, transition_probability: 0.25 },
+        { from_type: "processing", to_type: "quality", edge_type: "quality_check", transition_count: 2n, transition_probability: 0.5 }
+      ]
+    }
+  );
+
+// Test complex edge type patterns with cycles
+const type_aggregation_edge_type_cycles_test = new UnitTestBuilder("type_aggregation_edge_type_cycles")
+  .procedure(graph_aggregation_by_type)
+  .test(
+    {
+      nodes: [
+        { id: "A", type: "process" },
+        { id: "B", type: "process" },
+        { id: "C", type: "quality" },
+        { id: "D", type: "storage" }
+      ],
+      edges: [
+        { from: "A", to: "B", type: "processing" },
+        { from: "B", to: "D", type: "storage" },
+        { from: "A", to: "C", type: "quality_check" },
+        { from: "B", to: "C", type: "quality_check" },
+        { from: "C", to: "A", type: "quality_feedback" },
+        { from: "C", to: "B", type: "quality_feedback" },
+        { from: "D", to: "A", type: "reprocess" }
+      ]
+    },
+    {
+      aggregate_nodes: [
+        { type: "process", node_count: 2n },
+        { type: "quality", node_count: 1n },
+        { type: "storage", node_count: 1n }
+      ],
+      aggregate_edges: [
+        { from_type: "process", to_type: "process", edge_type: "processing", transition_count: 1n, transition_probability: 0.25 },
+        { from_type: "process", to_type: "quality", edge_type: "quality_check", transition_count: 2n, transition_probability: 0.5 },
+        { from_type: "process", to_type: "storage", edge_type: "storage", transition_count: 1n, transition_probability: 0.25 },
+        { from_type: "quality", to_type: "process", edge_type: "quality_feedback", transition_count: 2n, transition_probability: 1.0 },
+        { from_type: "storage", to_type: "process", edge_type: "reprocess", transition_count: 1n, transition_probability: 1.0 }
+      ]
+    }
+  );
+
+// Test empty edge type handling
+const type_aggregation_empty_edge_type_test = new UnitTestBuilder("type_aggregation_empty_edge_type")
+  .procedure(graph_aggregation_by_type)
+  .test(
+    {
+      nodes: [
+        { id: "A", type: "node_type" },
+        { id: "B", type: "node_type" }
+      ],
+      edges: [
+        { from: "A", to: "B", type: "" },
+        { from: "B", to: "A", type: "normal_edge" }
+      ]
+    },
+    {
+      aggregate_nodes: [
+        { type: "node_type", node_count: 2n }
+      ],
+      aggregate_edges: [
+        { from_type: "node_type", to_type: "node_type", edge_type: "", transition_count: 1n, transition_probability: 0.5 },
+        { from_type: "node_type", to_type: "node_type", edge_type: "normal_edge", transition_count: 1n, transition_probability: 0.5 }
       ]
     }
   );
@@ -355,5 +449,8 @@ export default Template(
   type_aggregation_sink_nodes_test,
   type_aggregation_self_loop_with_orphans_test,
   type_aggregation_validation_pipeline_test,
-  type_aggregation_multiple_orphaned_types_test
+  type_aggregation_multiple_orphaned_types_test,
+  type_aggregation_multiple_edge_types_test,
+  type_aggregation_edge_type_cycles_test,
+  type_aggregation_empty_edge_type_test
 );

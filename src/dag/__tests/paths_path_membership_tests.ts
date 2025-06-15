@@ -17,10 +17,10 @@ const path_membership_basic_test = new UnitTestBuilder("path_membership_basic")
         { id: "D", type: "end" }
       ],
       edges: [
-        { from: "A", to: "B" },
-        { from: "A", to: "C" },
-        { from: "B", to: "D" },
-        { from: "C", to: "D" }
+        { from: "A", to: "B", type: "flow" },
+        { from: "A", to: "C", type: "process" },
+        { from: "B", to: "D", type: "transfer" },
+        { from: "C", to: "D", type: "connect" }
       ],
       startId: "A",
       endId: "D"
@@ -46,12 +46,12 @@ const path_membership_complex_test = new UnitTestBuilder("path_membership_comple
         { id: "E", type: "end" }
       ],
       edges: [
-        { from: "A", to: "B" },
-        { from: "A", to: "C" },
-        { from: "B", to: "D" },
-        { from: "C", to: "D" },
-        { from: "B", to: "E" },
-        { from: "D", to: "E" }
+        { from: "A", to: "B", type: "flow" },
+        { from: "A", to: "C", type: "process" },
+        { from: "B", to: "D", type: "transfer" },
+        { from: "C", to: "D", type: "connect" },
+        { from: "B", to: "E", type: "direct" },
+        { from: "D", to: "E", type: "merge" }
       ],
       startId: "A",
       endId: "E"

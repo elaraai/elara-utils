@@ -17,9 +17,9 @@ const enhanced_bfs_test = new UnitTestBuilder("enhanced_bfs")
         { id: "D", type: "leaf" }
       ],
       edges: [
-        { from: "A", to: "B" },
-        { from: "A", to: "C" },
-        { from: "B", to: "D" }
+        { from: "A", to: "B", type: "flow" },
+        { from: "A", to: "C", type: "process" },
+        { from: "B", to: "D", type: "transfer" }
       ],
       startId: "A",
       useBFS: true
@@ -44,9 +44,9 @@ const enhanced_dfs_test = new UnitTestBuilder("enhanced_dfs")
         { id: "D", type: "leaf" }
       ],
       edges: [
-        { from: "A", to: "B" },
-        { from: "A", to: "C" },
-        { from: "B", to: "D" }
+        { from: "A", to: "B", type: "flow" },
+        { from: "A", to: "C", type: "process" },
+        { from: "B", to: "D", type: "transfer" }
       ],
       startId: "A",
       useBFS: false

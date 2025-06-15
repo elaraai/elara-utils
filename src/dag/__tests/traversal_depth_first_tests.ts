@@ -16,8 +16,8 @@ const dfs_linear_test = new UnitTestBuilder("dfs_linear")
         { id: "C", type: "node" }
       ],
       edges: [
-        { from: "A", to: "B" },
-        { from: "B", to: "C" }
+        { from: "A", to: "B", type: "flow" },
+        { from: "B", to: "C", type: "flow" }
       ],
       startId: "A"
     },
@@ -37,10 +37,10 @@ const dfs_tree_test = new UnitTestBuilder("dfs_tree")
         { id: "E", type: "leaf" }
       ],
       edges: [
-        { from: "A", to: "B" },
-        { from: "A", to: "C" },
-        { from: "B", to: "D" },
-        { from: "B", to: "E" }
+        { from: "A", to: "B", type: "branch" },
+        { from: "A", to: "C", type: "branch" },
+        { from: "B", to: "D", type: "process" },
+        { from: "B", to: "E", type: "process" }
       ],
       startId: "A"
     },
@@ -59,10 +59,10 @@ const dfs_diamond_test = new UnitTestBuilder("dfs_diamond")
         { id: "D", type: "bottom" }
       ],
       edges: [
-        { from: "A", to: "B" },
-        { from: "A", to: "C" },
-        { from: "B", to: "D" },
-        { from: "C", to: "D" }
+        { from: "A", to: "B", type: "branch" },
+        { from: "A", to: "C", type: "branch" },
+        { from: "B", to: "D", type: "merge" },
+        { from: "C", to: "D", type: "merge" }
       ],
       startId: "A"
     },
@@ -105,8 +105,8 @@ const dfs_self_loop_test = new UnitTestBuilder("dfs_self_loop")
         { id: "B", type: "normal" }
       ],
       edges: [
-        { from: "A", to: "A" }, // Self-loop
-        { from: "A", to: "B" }
+        { from: "A", to: "A", type: "loop" }, // Self-loop
+        { from: "A", to: "B", type: "flow" }
       ],
       startId: "A"
     },
@@ -125,8 +125,8 @@ const dfs_disconnected_test = new UnitTestBuilder("dfs_disconnected")
         { id: "D", type: "component2" }
       ],
       edges: [
-        { from: "A", to: "B" },
-        { from: "C", to: "D" } // Separate component
+        { from: "A", to: "B", type: "flow" },
+        { from: "C", to: "D", type: "flow" } // Separate component
       ],
       startId: "A"
     },
@@ -144,9 +144,9 @@ const dfs_cycle_test = new UnitTestBuilder("dfs_cycle")
         { id: "C", type: "cycle" }
       ],
       edges: [
-        { from: "A", to: "B" },
-        { from: "B", to: "C" },
-        { from: "C", to: "A" } // Creates cycle
+        { from: "A", to: "B", type: "flow" },
+        { from: "B", to: "C", type: "flow" },
+        { from: "C", to: "A", type: "cycle" } // Creates cycle
       ],
       startId: "A"
     },
@@ -163,9 +163,9 @@ const dfs_duplicate_edges_test = new UnitTestBuilder("dfs_duplicate_edges")
         { id: "B", type: "node" }
       ],
       edges: [
-        { from: "A", to: "B" },
-        { from: "A", to: "B" }, // Duplicate edge
-        { from: "A", to: "B" }  // Another duplicate
+        { from: "A", to: "B", type: "flow" },
+        { from: "A", to: "B", type: "flow" }, // Duplicate edge
+        { from: "A", to: "B", type: "flow" }  // Another duplicate
       ],
       startId: "A"
     },
@@ -186,11 +186,11 @@ const dfs_large_branching_test = new UnitTestBuilder("dfs_large_branching")
         { id: "child5", type: "child" }
       ],
       edges: [
-        { from: "root", to: "child1" },
-        { from: "root", to: "child2" },
-        { from: "root", to: "child3" },
-        { from: "root", to: "child4" },
-        { from: "root", to: "child5" }
+        { from: "root", to: "child1", type: "branch" },
+        { from: "root", to: "child2", type: "branch" },
+        { from: "root", to: "child3", type: "branch" },
+        { from: "root", to: "child4", type: "branch" },
+        { from: "root", to: "child5", type: "branch" }
       ],
       startId: "root"
     },

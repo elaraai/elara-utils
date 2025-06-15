@@ -17,8 +17,8 @@ const components_simple_test = new UnitTestBuilder("components_simple")
                 { id: "D", type: "target" }
             ],
             edges: [
-                { from: "A", to: "B" },
-                { from: "C", to: "D" }
+                { from: "A", to: "B", type: "flow" },
+                { from: "C", to: "D", type: "flow" }
             ],
             filter_by_types: new Set([])
         },
@@ -30,7 +30,7 @@ const components_simple_test = new UnitTestBuilder("components_simple")
                         { id: "B", type: "target" }
                     ],
                     edges: [
-                        { from: "A", to: "B" }
+                        { from: "A", to: "B", type: "flow" }
                     ],
                     source_nodes: [
                         { id: "A", type: "source" }
@@ -45,7 +45,7 @@ const components_simple_test = new UnitTestBuilder("components_simple")
                         { id: "D", type: "target" }
                     ],
                     edges: [
-                        { from: "C", to: "D" }
+                        { from: "C", to: "D", type: "flow" }
                     ],
                     source_nodes: [
                         { id: "C", type: "source" }
@@ -71,10 +71,10 @@ const components_connected_test = new UnitTestBuilder("components_connected")
                 { id: "E", type: "target" }
             ],
             edges: [
-                { from: "A", to: "B" },
-                { from: "A", to: "C" },
-                { from: "B", to: "D" },
-                { from: "C", to: "E" }
+                { from: "A", to: "B", type: "process" },
+                { from: "A", to: "C", type: "process" },
+                { from: "B", to: "D", type: "transfer" },
+                { from: "C", to: "E", type: "transfer" }
             ],
             filter_by_types: new Set([])
         },
@@ -89,10 +89,10 @@ const components_connected_test = new UnitTestBuilder("components_connected")
                         { id: "E", type: "target" }
                     ],
                     edges: [
-                        { from: "A", to: "B" },
-                        { from: "A", to: "C" },
-                        { from: "B", to: "D" },
-                        { from: "C", to: "E" }
+                        { from: "A", to: "B", type: "process" },
+                        { from: "A", to: "C", type: "process" },
+                        { from: "B", to: "D", type: "transfer" },
+                        { from: "C", to: "E", type: "transfer" }
                     ],
                     source_nodes: [
                         { id: "A", type: "source" }
@@ -118,7 +118,7 @@ const components_isolated_test = new UnitTestBuilder("components_isolated")
                 { id: "D", type: "isolated" }
             ],
             edges: [
-                { from: "B", to: "C" }
+                { from: "B", to: "C", type: "connection" }
             ],
             filter_by_types: new Set([])
         },
@@ -142,7 +142,7 @@ const components_isolated_test = new UnitTestBuilder("components_isolated")
                         { id: "C", type: "connected" }
                     ],
                     edges: [
-                        { from: "B", to: "C" }
+                        { from: "B", to: "C", type: "connection" }
                     ],
                     source_nodes: [
                         { id: "B", type: "connected" }
@@ -181,9 +181,9 @@ const components_mixed_test = new UnitTestBuilder("components_mixed")
                 { id: "F", type: "output" }
             ],
             edges: [
-                { from: "A", to: "B" },
-                { from: "B", to: "C" },
-                { from: "D", to: "F" }
+                { from: "A", to: "B", type: "input" },
+                { from: "B", to: "C", type: "output" },
+                { from: "D", to: "F", type: "direct" }
             ],
             filter_by_types: new Set([])
         },
@@ -196,8 +196,8 @@ const components_mixed_test = new UnitTestBuilder("components_mixed")
                         { id: "C", type: "output" }
                     ],
                     edges: [
-                        { from: "A", to: "B" },
-                        { from: "B", to: "C" }
+                        { from: "A", to: "B", type: "input" },
+                        { from: "B", to: "C", type: "output" }
                     ],
                     source_nodes: [
                         { id: "A", type: "input" }
@@ -212,7 +212,7 @@ const components_mixed_test = new UnitTestBuilder("components_mixed")
                         { id: "F", type: "output" }
                     ],
                     edges: [
-                        { from: "D", to: "F" }
+                        { from: "D", to: "F", type: "direct" }
                     ],
                     source_nodes: [
                         { id: "D", type: "input" }
@@ -293,9 +293,9 @@ const components_filter_test = new UnitTestBuilder("components_filter")
                 { id: "E", type: "process" }
             ],
             edges: [
-                { from: "A", to: "B" },
-                { from: "B", to: "C" },
-                { from: "D", to: "E" }
+                { from: "A", to: "B", type: "input" },
+                { from: "B", to: "C", type: "output" },
+                { from: "D", to: "E", type: "processing" }
             ],
             filter_by_types: new Set(["process"])
         },
@@ -308,8 +308,8 @@ const components_filter_test = new UnitTestBuilder("components_filter")
                         { id: "C", type: "output" }
                     ],
                     edges: [
-                        { from: "A", to: "B" },
-                        { from: "B", to: "C" }
+                        { from: "A", to: "B", type: "input" },
+                        { from: "B", to: "C", type: "output" }
                     ],
                     source_nodes: [
                         { id: "A", type: "input" }
@@ -324,7 +324,7 @@ const components_filter_test = new UnitTestBuilder("components_filter")
                         { id: "E", type: "process" }
                     ],
                     edges: [
-                        { from: "D", to: "E" }
+                        { from: "D", to: "E", type: "processing" }
                     ],
                     source_nodes: [
                         { id: "D", type: "other" }
@@ -349,10 +349,10 @@ const components_cycle_test = new UnitTestBuilder("components_cycle")
                 { id: "D", type: "end" }
             ],
             edges: [
-                { from: "A", to: "B" },
-                { from: "B", to: "C" },
-                { from: "C", to: "B" }, // Cycle
-                { from: "C", to: "D" }
+                { from: "A", to: "B", type: "start" },
+                { from: "B", to: "C", type: "forward" },
+                { from: "C", to: "B", type: "feedback" }, // Cycle
+                { from: "C", to: "D", type: "finish" }
             ],
             filter_by_types: new Set([])
         },
@@ -366,10 +366,10 @@ const components_cycle_test = new UnitTestBuilder("components_cycle")
                         { id: "D", type: "end" }
                     ],
                     edges: [
-                        { from: "A", to: "B" },
-                        { from: "B", to: "C" },
-                        { from: "C", to: "B" },
-                        { from: "C", to: "D" }
+                        { from: "A", to: "B", type: "start" },
+                        { from: "B", to: "C", type: "forward" },
+                        { from: "C", to: "B", type: "feedback" },
+                        { from: "C", to: "D", type: "finish" }
                     ],
                     source_nodes: [
                         { id: "A", type: "start" }

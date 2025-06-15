@@ -13,8 +13,8 @@ const missing_transitions_none_test = new UnitTestBuilder("missing_transitions_n
         { id: "C", type: "output" }
       ],
       edges: [
-        { from: "A", to: "B" },
-        { from: "B", to: "C" }
+        { from: "A", to: "B", type: "flow" },
+        { from: "B", to: "C", type: "process" }
       ],
       expected_transitions: [
         { from_type: "input", to_type: "process" },
@@ -35,7 +35,7 @@ const missing_transitions_some_test = new UnitTestBuilder("missing_transitions_s
         { id: "C", type: "output" }
       ],
       edges: [
-        { from: "A", to: "B" }
+        { from: "A", to: "B", type: "flow" }
         // Missing B -> C edge
       ],
       expected_transitions: [
@@ -81,7 +81,7 @@ const missing_transitions_empty_expected_test = new UnitTestBuilder("missing_tra
         { id: "B", type: "process" }
       ],
       edges: [
-        { from: "A", to: "B" }
+        { from: "A", to: "B", type: "flow" }
       ],
       expected_transitions: []
     },
@@ -98,9 +98,9 @@ const missing_transitions_dangling_test = new UnitTestBuilder("missing_transitio
         { id: "B", type: "process" }
       ],
       edges: [
-        { from: "A", to: "B" },
-        { from: "B", to: "C" }, // C doesn't exist
-        { from: "D", to: "B" }  // D doesn't exist
+        { from: "A", to: "B", type: "flow" },
+        { from: "B", to: "C", type: "dangling" }, // C doesn't exist
+        { from: "D", to: "B", type: "dangling" }  // D doesn't exist
       ],
       expected_transitions: [
         { from_type: "input", to_type: "process" },

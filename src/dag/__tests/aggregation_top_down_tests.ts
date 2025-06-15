@@ -15,8 +15,8 @@ const top_down_basic_test = new UnitTestBuilder("top_down_basic")
         { id: "C", value: 3.0, weight: null }
       ],
       edges: [
-        { from: "A", to: "B" },
-        { from: "A", to: "C" }
+        { from: "A", to: "B", type: "flow" },
+        { from: "A", to: "C", type: "process" }
       ]
     },
     [
@@ -50,9 +50,9 @@ const top_down_multilevel_test = new UnitTestBuilder("top_down_multilevel")
         { id: "D", value: 1.0, weight: null }
       ],
       edges: [
-        { from: "A", to: "B" },
-        { from: "A", to: "C" },
-        { from: "B", to: "D" }
+        { from: "A", to: "B", type: "transfer" },
+        { from: "A", to: "C", type: "flow" },
+        { from: "B", to: "D", type: "process" }
       ]
     },
     [

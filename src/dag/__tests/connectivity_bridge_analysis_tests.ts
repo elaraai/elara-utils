@@ -13,9 +13,9 @@ const bridge_analysis_none_test = new UnitTestBuilder("bridge_analysis_none")
         { id: "C", type: "node" }
       ],
       edges: [
-        { from: "A", to: "B" },
-        { from: "B", to: "C" },
-        { from: "C", to: "A" } // Creates cycle, no bridges
+        { from: "A", to: "B", type: "flow" },
+        { from: "B", to: "C", type: "flow" },
+        { from: "C", to: "A", type: "flow" } // Creates cycle, no bridges
       ]
     },
     [] // No bridge nodes
@@ -32,8 +32,8 @@ const bridge_analysis_single_test = new UnitTestBuilder("bridge_analysis_single"
         { id: "C", type: "right" }
       ],
       edges: [
-        { from: "A", to: "B" },
-        { from: "B", to: "C" }
+        { from: "A", to: "B", type: "connection" },
+        { from: "B", to: "C", type: "connection" }
       ]
     },
     [
@@ -54,10 +54,10 @@ const bridge_analysis_multiple_test = new UnitTestBuilder("bridge_analysis_multi
         { id: "E", type: "node" }
       ],
       edges: [
-        { from: "A", to: "B" },
-        { from: "B", to: "C" },
-        { from: "C", to: "D" },
-        { from: "D", to: "E" }
+        { from: "A", to: "B", type: "process" },
+        { from: "B", to: "C", type: "process" },
+        { from: "C", to: "D", type: "process" },
+        { from: "D", to: "E", type: "process" }
       ]
     },
     [
@@ -97,14 +97,14 @@ const bridge_analysis_complex_test = new UnitTestBuilder("bridge_analysis_comple
       ],
       edges: [
         // Cluster 1
-        { from: "A", to: "B" },
-        { from: "B", to: "A" },
+        { from: "A", to: "B", type: "transfer" },
+        { from: "B", to: "A", type: "transfer" },
         // Bridge connection
-        { from: "B", to: "C" },
-        { from: "C", to: "D" },
+        { from: "B", to: "C", type: "bridge" },
+        { from: "C", to: "D", type: "bridge" },
         // Cluster 2
-        { from: "D", to: "E" },
-        { from: "E", to: "D" }
+        { from: "D", to: "E", type: "transfer" },
+        { from: "E", to: "D", type: "transfer" }
         // F is isolated
       ]
     },

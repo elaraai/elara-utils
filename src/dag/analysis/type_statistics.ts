@@ -98,6 +98,21 @@ export const graph_type_statistics = new Procedure("graph_type_statistics")
       $.pushLast(nodeTypes, nodeType);
     });
     
+    // Extract unique edge types from all edges
+    const allEdgeTypes = $.let(NewSet(StringType));
+    const edgeTypes = $.let(NewArray(StringType));
+    
+    // Collect all unique edge types from actual edges
+    $.forArray(edges, ($, edge) => {
+      const edgeType = $.let(GetField(edge, "type"));
+      $.insertOrUpdate(allEdgeTypes, edgeType);
+    });
+    
+    // Convert set to array for output
+    $.forSet(allEdgeTypes, ($, edgeType) => {
+      $.pushLast(edgeTypes, edgeType);
+    });
+    
     // uniqueNodeTypesCount will be calculated later
     
     // Find actual source and target node types (not just type transitions)
@@ -140,8 +155,9 @@ export const graph_type_statistics = new Procedure("graph_type_statistics")
     // No additional structural metrics needed for type statistics
     // This procedure focuses on type analysis without expensive traversal
     
-    // Calculate unique node types count right before return to ensure proper field ordering
+    // Calculate unique node and edge types count right before return to ensure proper field ordering
     const uniqueNodeTypesCount = $.let(Size(nodeTypes));
+    const uniqueEdgeTypesCount = $.let(Size(edgeTypes));
     
     // Return type-focused statistics - field order must match GraphTypeStatistics exactly
     $.return(Struct({
@@ -151,6 +167,8 @@ export const graph_type_statistics = new Procedure("graph_type_statistics")
       unique_node_types_count: uniqueNodeTypesCount,
       source_node_types: sourceNodeTypesArray,
       target_node_types: targetNodeTypesArray,
+      edge_types: edgeTypes,
+      unique_edge_types_count: uniqueEdgeTypesCount,
       aggregate_nodes: aggregateNodes,
       aggregate_edges: aggregateEdges
     }));

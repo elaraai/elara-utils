@@ -16,8 +16,8 @@ const bfs_linear_test = new UnitTestBuilder("bfs_linear")
         { id: "C", type: "node" }
       ],
       edges: [
-        { from: "A", to: "B" },
-        { from: "B", to: "C" }
+        { from: "A", to: "B", type: "flow" },
+        { from: "B", to: "C", type: "flow" }
       ],
       startId: "A"
     },
@@ -37,10 +37,10 @@ const bfs_tree_test = new UnitTestBuilder("bfs_tree")
         { id: "E", type: "leaf" }
       ],
       edges: [
-        { from: "A", to: "B" },
-        { from: "A", to: "C" },
-        { from: "B", to: "D" },
-        { from: "B", to: "E" }
+        { from: "A", to: "B", type: "process" },
+        { from: "A", to: "C", type: "process" },
+        { from: "B", to: "D", type: "transfer" },
+        { from: "B", to: "E", type: "transfer" }
       ],
       startId: "A"
     },
@@ -59,10 +59,10 @@ const bfs_diamond_test = new UnitTestBuilder("bfs_diamond")
         { id: "D", type: "bottom" }
       ],
       edges: [
-        { from: "A", to: "B" },
-        { from: "A", to: "C" },
-        { from: "B", to: "D" },
-        { from: "C", to: "D" }
+        { from: "A", to: "B", type: "branch" },
+        { from: "A", to: "C", type: "branch" },
+        { from: "B", to: "D", type: "merge" },
+        { from: "C", to: "D", type: "merge" }
       ],
       startId: "A"
     },
@@ -105,8 +105,8 @@ const bfs_self_loop_test = new UnitTestBuilder("bfs_self_loop")
         { id: "B", type: "normal" }
       ],
       edges: [
-        { from: "A", to: "A" }, // Self-loop
-        { from: "A", to: "B" }
+        { from: "A", to: "A", type: "loop" }, // Self-loop
+        { from: "A", to: "B", type: "flow" }
       ],
       startId: "A"
     },
@@ -125,8 +125,8 @@ const bfs_disconnected_test = new UnitTestBuilder("bfs_disconnected")
         { id: "D", type: "component2" }
       ],
       edges: [
-        { from: "A", to: "B" },
-        { from: "C", to: "D" } // Separate component
+        { from: "A", to: "B", type: "connect" },
+        { from: "C", to: "D", type: "connect" } // Separate component
       ],
       startId: "A"
     },
@@ -144,9 +144,9 @@ const bfs_cycle_test = new UnitTestBuilder("bfs_cycle")
         { id: "C", type: "cycle" }
       ],
       edges: [
-        { from: "A", to: "B" },
-        { from: "B", to: "C" },
-        { from: "C", to: "A" } // Creates cycle
+        { from: "A", to: "B", type: "cycle" },
+        { from: "B", to: "C", type: "cycle" },
+        { from: "C", to: "A", type: "cycle" } // Creates cycle
       ],
       startId: "A"
     },
@@ -163,9 +163,9 @@ const bfs_duplicate_edges_test = new UnitTestBuilder("bfs_duplicate_edges")
         { id: "B", type: "node" }
       ],
       edges: [
-        { from: "A", to: "B" },
-        { from: "A", to: "B" }, // Duplicate edge
-        { from: "A", to: "B" }  // Another duplicate
+        { from: "A", to: "B", type: "duplicate" },
+        { from: "A", to: "B", type: "duplicate" }, // Duplicate edge
+        { from: "A", to: "B", type: "duplicate" }  // Another duplicate
       ],
       startId: "A"
     },
@@ -186,15 +186,45 @@ const bfs_large_branching_test = new UnitTestBuilder("bfs_large_branching")
         { id: "child5", type: "child" }
       ],
       edges: [
-        { from: "root", to: "child1" },
-        { from: "root", to: "child2" },
-        { from: "root", to: "child3" },
-        { from: "root", to: "child4" },
-        { from: "root", to: "child5" }
+        { from: "root", to: "child1", type: "spawn" },
+        { from: "root", to: "child2", type: "spawn" },
+        { from: "root", to: "child3", type: "spawn" },
+        { from: "root", to: "child4", type: "spawn" },
+        { from: "root", to: "child5", type: "spawn" }
       ],
       startId: "root"
     },
     ["root", "child1", "child2", "child3", "child4", "child5"] // Level-order
+  );
+
+// Sibling endpoints test - testing the network extraction edge case
+// This tests if BFS from F can find sibling endpoint G via common upstream network
+const bfs_sibling_endpoints_test = new UnitTestBuilder("bfs_sibling_endpoints")
+  .procedure(graph_bfs)
+  .test(
+    {
+      nodes: [
+        { id: "A", type: "source" },
+        { id: "B", type: "process" },
+        { id: "C", type: "mixer" },
+        { id: "E", type: "splitter" },
+        { id: "F", type: "target" },
+        { id: "G", type: "target" },
+        { id: "X", type: "external" },
+        { id: "D", type: "process" }
+      ],
+      edges: [
+        { from: "A", to: "B", type: "flow" },
+        { from: "B", to: "C", type: "input" },
+        { from: "C", to: "E", type: "flow" },
+        { from: "X", to: "D", type: "supply" },
+        { from: "D", to: "E", type: "input" },
+        { from: "E", to: "F", type: "output" },
+        { from: "E", to: "G", type: "output" }
+      ],
+      startId: "F"
+    },
+    ["F"] // BFS from F should only find F (no outgoing edges from F)
   );
 
 export default Template(
@@ -207,5 +237,6 @@ export default Template(
   bfs_disconnected_test,
   bfs_cycle_test,
   bfs_duplicate_edges_test,
-  bfs_large_branching_test
+  bfs_large_branching_test,
+  bfs_sibling_endpoints_test
 );

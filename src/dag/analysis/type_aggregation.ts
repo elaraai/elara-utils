@@ -1,6 +1,7 @@
 import { Procedure } from "@elaraai/core";
 import {
   Add,
+  And,
   Const,
   Divide,
   Get,
@@ -108,60 +109,77 @@ export const graph_aggregation_by_type = new Procedure("graph_aggregation_by_typ
       $.insertOrUpdate(typeNodeCounts, nodeType, Add(currentCount, Const(1n)));
     });
     
-    // Analyze edge transitions by type
-    const typeTransitionCounts = $.let(NewDict(StringType, DictType(StringType, IntegerType))); // from_type -> (to_type -> count)
+    // Analyze edge transitions by type including edge types
+    const typeTransitionCounts = $.let(NewDict(StringType, DictType(StringType, DictType(StringType, IntegerType)))); // from_type -> (edge_type -> (to_type -> count))
     const typeOutgoingCounts = $.let(NewDict(StringType, IntegerType)); // type -> total outgoing edges
     
     $.forArray(edges, ($, edge) => {
       const fromId = $.let(GetField(edge, "from"));
       const toId = $.let(GetField(edge, "to"));
+      const edgeType = $.let(GetField(edge, "type"));
       
-      // Get types for source and target nodes
-      const fromType = $.let(Get(nodeTypeMap, fromId));
-      const toType = $.let(Get(nodeTypeMap, toId));
-      
-      // Update transition count for this type pair
-      $.if(In(typeTransitionCounts, fromType)).then($ => {
-        const transitions = $.let(Get(typeTransitionCounts, fromType));
-        const currentCount = $.let(Get(transitions, toType, Const(0n)));
-        $.insertOrUpdate(transitions, toType, Add(currentCount, Const(1n)));
-      }).else($ => {
-        const newTransitions = $.let(NewDict(StringType, IntegerType));
-        $.insertOrUpdate(newTransitions, toType, Const(1n));
-        $.insertOrUpdate(typeTransitionCounts, fromType, newTransitions);
+      // Only process edges where both nodes exist in the node type map
+      $.if(And(In(nodeTypeMap, fromId), In(nodeTypeMap, toId))).then($ => {
+        // Get types for source and target nodes
+        const fromType = $.let(Get(nodeTypeMap, fromId));
+        const toType = $.let(Get(nodeTypeMap, toId));
+        
+        // Update transition count for this type triple (from_type, edge_type, to_type)
+        $.if(In(typeTransitionCounts, fromType)).then($ => {
+          const edgeTypeMap = $.let(Get(typeTransitionCounts, fromType));
+          
+          $.if(In(edgeTypeMap, edgeType)).then($ => {
+            const transitions = $.let(Get(edgeTypeMap, edgeType));
+            const currentCount = $.let(Get(transitions, toType, Const(0n)));
+            $.insertOrUpdate(transitions, toType, Add(currentCount, Const(1n)));
+          }).else($ => {
+            const newTransitions = $.let(NewDict(StringType, IntegerType));
+            $.insertOrUpdate(newTransitions, toType, Const(1n));
+            $.insertOrUpdate(edgeTypeMap, edgeType, newTransitions);
+          });
+        }).else($ => {
+          const newEdgeTypeMap = $.let(NewDict(StringType, DictType(StringType, IntegerType)));
+          const newTransitions = $.let(NewDict(StringType, IntegerType));
+          $.insertOrUpdate(newTransitions, toType, Const(1n));
+          $.insertOrUpdate(newEdgeTypeMap, edgeType, newTransitions);
+          $.insertOrUpdate(typeTransitionCounts, fromType, newEdgeTypeMap);
+        });
+        
+        // Update total outgoing count for source type
+        const currentOutgoing = $.let(Get(typeOutgoingCounts, fromType, Const(0n)));
+        $.insertOrUpdate(typeOutgoingCounts, fromType, Add(currentOutgoing, Const(1n)));
       });
-      
-      // Update total outgoing count for source type
-      const currentOutgoing = $.let(Get(typeOutgoingCounts, fromType, Const(0n)));
-      $.insertOrUpdate(typeOutgoingCounts, fromType, Add(currentOutgoing, Const(1n)));
     });
     
     // Build aggregate edges and collect participating types in one pass
     const aggregateEdges = $.let(NewArray(GraphTypeAggregateEdge));
     const typesInEdges = $.let(NewSet(StringType));
     
-    $.forDict(typeTransitionCounts, ($, transitions, fromType) => {
+    $.forDict(typeTransitionCounts, ($, edgeTypeMap, fromType) => {
       $.insertOrUpdate(typesInEdges, fromType); // Collect fromType
       const totalOutgoing = $.let(Get(typeOutgoingCounts, fromType, Const(0n)));
       
-      $.forDict(transitions, ($, transitionCount, toType) => {
-        $.insertOrUpdate(typesInEdges, toType); // Collect toType
-        
-        const probability = $.let(Const(0.0));
-        
-        $.if(Greater(totalOutgoing, Const(0n))).then($ => {
-          // Convert integers to floats for division
-          const transitionFloat = $.let(Multiply(transitionCount, Const(1.0)));
-          const totalFloat = $.let(Multiply(totalOutgoing, Const(1.0)));
-          $.assign(probability, Divide(transitionFloat, totalFloat));
+      $.forDict(edgeTypeMap, ($, transitions, edgeType) => {
+        $.forDict(transitions, ($, transitionCount, toType) => {
+          $.insertOrUpdate(typesInEdges, toType); // Collect toType
+          
+          const probability = $.let(Const(0.0));
+          
+          $.if(Greater(totalOutgoing, Const(0n))).then($ => {
+            // Convert integers to floats for division
+            const transitionFloat = $.let(Multiply(transitionCount, Const(1.0)));
+            const totalFloat = $.let(Multiply(totalOutgoing, Const(1.0)));
+            $.assign(probability, Divide(transitionFloat, totalFloat));
+          });
+          
+          $.pushLast(aggregateEdges, Struct({
+            from_type: fromType,
+            to_type: toType,
+            edge_type: edgeType,
+            transition_count: transitionCount,
+            transition_probability: probability
+          }));
         });
-        
-        $.pushLast(aggregateEdges, Struct({
-          from_type: fromType,
-          to_type: toType,
-          transition_count: transitionCount,
-          transition_probability: probability
-        }));
       });
     });
     

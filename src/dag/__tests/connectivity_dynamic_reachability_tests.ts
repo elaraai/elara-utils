@@ -14,9 +14,9 @@ const dynamic_reachability_basic_test = new UnitTestBuilder("dynamic_reachabilit
         { id: "D", type: "isolated" }
       ],
       edges: [
-        { from: "A", to: "B", active: true },
-        { from: "B", to: "C", active: true },
-        { from: "A", to: "D", active: false } // Inactive edge
+        { from: "A", to: "B", type: "flow", active: true },
+        { from: "B", to: "C", type: "process", active: true },
+        { from: "A", to: "D", type: "transfer", active: false } // Inactive edge
       ]
     },
     {
@@ -47,10 +47,10 @@ const dynamic_reachability_mixed_test = new UnitTestBuilder("dynamic_reachabilit
         { id: "D", type: "merge" }
       ],
       edges: [
-        { from: "A", to: "B", active: true },
-        { from: "A", to: "C", active: false }, // Inactive path
-        { from: "B", to: "D", active: true },
-        { from: "C", to: "D", active: true }
+        { from: "A", to: "B", type: "flow", active: true },
+        { from: "A", to: "C", type: "branch", active: false }, // Inactive path
+        { from: "B", to: "D", type: "merge", active: true },
+        { from: "C", to: "D", type: "merge", active: true }
       ]
     },
     {

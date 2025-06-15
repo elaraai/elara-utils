@@ -84,9 +84,11 @@ export const graph_connected_components = new Procedure("graph_connected_compone
       $.pushLast(undirectedEdges, edge);
       
       // Add reverse edge to make undirected
+      const edgeType = $.let(GetField(edge, "type"));
       $.pushLast(undirectedEdges, Struct({
         from: toId,
-        to: fromId
+        to: fromId,
+        type: edgeType
       }));
     });
     

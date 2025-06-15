@@ -15,8 +15,8 @@ const group_value_basic_test = new UnitTestBuilder("group_value_basic")
         { id: "C", value: new Map([["volume", 30.0], ["quality", 0.7], ["cost", 20.0]]) }
       ],
       edges: [
-        { from: "A", to: "B" },
-        { from: "A", to: "C" }
+        { from: "A", to: "B", type: "flow" },
+        { from: "A", to: "C", type: "process" }
       ]
     },
     [
@@ -51,10 +51,10 @@ const group_value_complex_test = new UnitTestBuilder("group_value_complex")
         { id: "E", value: new Map([["volume", 20.0], ["quality", 0.8], ["cost", 15.0]]) }
       ],
       edges: [
-        { from: "A", to: "B" },
-        { from: "A", to: "C" },
-        { from: "B", to: "D" },
-        { from: "C", to: "E" }
+        { from: "A", to: "B", type: "transfer" },
+        { from: "A", to: "C", type: "flow" },
+        { from: "B", to: "D", type: "process" },
+        { from: "C", to: "E", type: "stream" }
       ]
     },
     [

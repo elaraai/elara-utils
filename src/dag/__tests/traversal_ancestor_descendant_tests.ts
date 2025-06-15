@@ -17,9 +17,9 @@ const ancestor_descendant_basic_test = new UnitTestBuilder("ancestor_descendant_
         { id: "D", type: "leaf" }
       ],
       edges: [
-        { from: "A", to: "B" },
-        { from: "A", to: "C" },
-        { from: "B", to: "D" }
+        { from: "A", to: "B", type: "flow" },
+        { from: "A", to: "C", type: "flow" },
+        { from: "B", to: "D", type: "process" }
       ]
     },
     [
@@ -63,11 +63,11 @@ const ancestor_descendant_complex_test = new UnitTestBuilder("ancestor_descendan
         { id: "E", type: "leaf" }
       ],
       edges: [
-        { from: "A", to: "B" },
-        { from: "A", to: "C" },
-        { from: "B", to: "D" },
-        { from: "C", to: "D" },
-        { from: "D", to: "E" }
+        { from: "A", to: "B", type: "flow" },
+        { from: "A", to: "C", type: "flow" },
+        { from: "B", to: "D", type: "process" },
+        { from: "C", to: "D", type: "process" },
+        { from: "D", to: "E", type: "transfer" }
       ]
     },
     [
@@ -116,8 +116,8 @@ const ancestor_descendant_disconnected_test = new UnitTestBuilder("ancestor_desc
         { id: "D", type: "component2" }
       ],
       edges: [
-        { from: "A", to: "B" },
-        { from: "C", to: "D" }
+        { from: "A", to: "B", type: "connection" },
+        { from: "C", to: "D", type: "connection" }
       ]
     },
     [

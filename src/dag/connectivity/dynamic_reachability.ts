@@ -64,7 +64,8 @@ export const graph_dynamic_reachability = new Procedure("graph_dynamic_reachabil
       $.if(isActive).then($ => {
         $.pushLast(activeEdges, Struct({
           from: GetField(edge, "from"),
-          to: GetField(edge, "to")
+          to: GetField(edge, "to"),
+          type: GetField(edge, "type")
         }));
       });
     });

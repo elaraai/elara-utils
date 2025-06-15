@@ -329,6 +329,185 @@ const dfs = new Procedure("dfs")
 - **Templates are for grouping** - Use `Template(proc1, proc2, ...)` only when exporting multiple procedures together
 - **Tests need Templates** - UnitTestBuilder results must be wrapped in Template for execution
 
+## TypeDoc Documentation Standards for Procedures
+
+### Overview
+All EDK Procedures must include comprehensive TypeDoc documentation that clearly explains the algorithm, inputs, outputs, complexity, and behavior. This ensures maintainability and helps users understand how to use procedures correctly.
+
+### Required Documentation Sections
+
+#### 1. **Title and Purpose**
+```typescript
+/**
+ * [Algorithm Name] - [Brief description of what it does]
+ * 
+ * **Purpose**: Detailed explanation of the algorithm's purpose, use cases, and why it exists.
+ * Include context about the problem domain (e.g., "for batch genealogy traceability").
+ */
+```
+
+#### 3. **Key Assumptions**
+```typescript
+/**
+ * **Key Assumptions**:
+ * - Assumption 1: Description of what the algorithm assumes about inputs
+ * - Assumption 2: Description of data structure expectations
+ * - Assumption 3: Description of graph properties or constraints
+ * - Assumption N: Any other critical assumptions
+ */
+```
+
+#### 4. **Complexity Analysis** (Required)
+```typescript
+/**
+ * **Time Complexity**: O(expression) where:
+ * - Variable 1 = description of what this variable represents
+ * - Variable 2 = description of what this variable represents
+ * Note: Include details about optimizations and constant factor improvements
+ * 
+ * **Space Complexity**: O(expression) for:
+ * - Component 1: description and complexity
+ * - Component 2: description and complexity
+ * - Include pre-computed structures and reusable data when applicable
+ */
+```
+
+#### 5. **Input/Output Documentation** (Required)
+```typescript
+/**
+ * **Input Parameters**:
+ * @param paramName1 - Detailed description including data structure and constraints
+ * @param paramName2 - Detailed description including data structure and constraints
+ * 
+ * **Output Structure**:
+ * @returns ReturnType containing:
+ * - field1: Description of this field and what it contains
+ * - field2: Description of this field and what it contains
+ * - fieldN: Description of any nested structures or special meanings
+ */
+```
+
+#### 6. **Behavior Examples** (Highly Recommended)
+```typescript
+/**
+ * **Behavior Examples**:
+ * 
+ * ```
+ * Example 1: [Scenario Name]
+ * Graph: [ASCII diagram or description]
+ * Input: [specific input values]
+ * Output: [expected output with explanation]
+ *   [Additional details about why this output occurs]
+ * 
+ * Example 2: [Different Scenario]
+ * Graph: [ASCII diagram or description] 
+ * Input: [specific input values]
+ * Output: [expected output with explanation]
+ *   Note: [Any important observations about behavior]
+ * ```
+ */
+```
+
+#### 7. **Edge Cases** (Recommended)
+```typescript
+/**
+ * **Edge Cases Handled**:
+ * - Case 1: Description and how algorithm handles it
+ * - Case 2: Description and how algorithm handles it
+ * - Case N: Any other important edge cases
+ */
+```
+
+#### 9. **Use Cases** (Optional but Recommended)
+```typescript
+/**
+ * **Use Cases**:
+ * - Use case 1: "Description of when to use this algorithm"
+ * - Use case 2: "Description of practical application"
+ * - Use case N: "Description of domain-specific scenarios"
+ */
+```
+
+### Complete Example Template
+
+```typescript
+/**
+ * [Algorithm Name] - [Brief description]
+ * 
+ * **Purpose**: [Detailed explanation of purpose and domain context]
+ * 
+ * **Key Assumptions**:
+ * - [Assumption 1]
+ * - [Assumption 2]
+ * 
+ * **Time Complexity**: O(expression) where:
+ * - Variable = description
+ * 
+ * **Space Complexity**: O(expression) for:
+ * - Component: description
+ * 
+ * **Input Parameters**:
+ * @param param1 - Description
+ * @param param2 - Description
+ * 
+ * **Output Structure**:
+ * @returns ReturnType containing:
+ * - field1: Description
+ * - field2: Description
+ * 
+ * **Behavior Examples**:
+ * ```
+ * Example 1: [Scenario]
+ * Input: [values]
+ * Output: [result]
+ * ```
+ * 
+ * **Edge Cases Handled**:
+ * - [Case 1]: [How handled]
+ * 
+ * **Use Cases**:
+ * - [Use case 1]: [Description]
+ */
+export const my_procedure = new Procedure("my_procedure")
+  .input("param1", Type1)
+  .input("param2", Type2)
+  .output(ReturnType)
+  .body(($, { param1, param2 }) => {
+    // Implementation
+  });
+```
+
+### TypeDoc Test Documentation Standards
+
+For comprehensive test suites, use concise but clear documentation:
+
+```typescript
+/**
+ * Test N: [Test Scenario Name]
+ * Input: [Brief description of graph/inputs] | Output: [Expected result summary]
+ */
+const test_name = new UnitTestBuilder("test_name")
+  .procedure(my_procedure)
+  .test(input, expectedOutput);
+```
+
+### Documentation Quality Guidelines
+
+1. **Clarity**: Write for someone unfamiliar with the algorithm
+2. **Completeness**: Cover all major aspects of behavior
+3. **Accuracy**: Ensure complexity analysis and examples are correct
+4. **Consistency**: Follow the same structure across all procedures
+5. **Examples**: Include realistic examples that demonstrate key features
+6. **Maintenance**: Update documentation when algorithm changes
+
+### Common Mistakes to Avoid
+
+- **Missing complexity analysis**: Always include Big O notation
+- **Vague parameter descriptions**: Be specific about data structures and constraints  
+- **No edge case coverage**: Document how unusual inputs are handled
+- **Outdated examples**: Keep examples synchronized with actual behavior
+- **Generic descriptions**: Avoid copy-paste documentation that doesn't match the specific algorithm
+
 ## Debugging and Logging
 
 ### Debug Logging in Procedures
@@ -365,6 +544,78 @@ make dagflow_conservation_tests  # Note the workspace ID in output
 edk workspace switch test_3adcfa4d
 edk task logs Function.Test.dynamic_reachability_basic --raw
 ```
+
+### Debugging Procedure Execution Errors
+
+When procedures fail, the error messages include **execution traces** that show exactly where the error occurred:
+
+#### Understanding Error Stack Traces
+
+**Error Format:**
+```
+Key "MISSING_NODE" not found in dictionary (in procedure graph_cycle_detection -> Statement 17 (for) -> Statement 8 (if true) -> Statement 4 (while) -> Statement 8 (if true) -> Statement 2 (if true) -> Statement 2 (for) -> Statement 1 (let var_17) -> Get)
+```
+
+**How to Read the Trace:**
+- `procedure graph_cycle_detection` - The procedure that failed
+- `Statement 17 (for)` - The 17th statement in the procedure body (a `$.forArray()`)
+- `Statement 8 (if true)` - The 8th statement inside that for loop (a `$.if().then()`)
+- `Statement 4 (while)` - The 4th statement inside that if block (a `$.while()`)
+- `Statement 8 (if true)` - The 8th statement inside the while loop
+- `Statement 2 (if true)` - The 2nd statement in that if block
+- `Statement 2 (for)` - The 2nd statement (another `$.forArray()`)
+- `Statement 1 (let var_17)` - The 1st statement in that for loop (a `$.let()`)
+- `Get` - The specific operation that failed (a `Get()` expression)
+
+#### Debugging Strategy
+
+1. **Count Statements**: Find the failing statement by counting procedure statements from the top
+2. **Follow the Nesting**: Trace through nested control structures (for/if/while)
+3. **Identify the Operation**: The last item is the specific operation that failed
+
+**Example Debug Process:**
+```typescript
+export const graph_cycle_detection = new Procedure("graph_cycle_detection")
+  .body(($, { nodes, edges }) => {
+    // Statement 1: const nodeCount = ...
+    // Statement 2: const edgeCount = ...
+    // ...
+    // Statement 17: THIS IS THE FAILING $.forArray()
+    $.forArray(nodes, ($, node, nodeIndex, outerLabel) => {
+      // Statement 1 (inside for): Early exit check
+      // Statement 2, 3, 4, 5, 6, 7...
+      // Statement 8: THIS IS THE FAILING $.if()
+      $.if(Equal(nodeColor, Const(0n))).then($ => {
+        // Statement 1, 2, 3...
+        // Statement 4: THIS IS THE FAILING $.while()
+        $.while(Greater(Size(stack), Const(0n)), $ => {
+          // ... trace continues into while loop
+          $.forArray(neighbors, ($, neighbor) => {
+            // Statement 1: THIS IS WHERE Get() FAILED
+            const neighborColor = $.let(Get(color, neighbor)); // ❌ MISSING_NODE not in color dict
+          });
+        });
+      });
+    });
+  });
+```
+
+#### Common Error Patterns
+
+**Dictionary Key Errors:**
+- **Cause**: `Get()` operations on missing keys
+- **Solution**: Add `In()` checks before `Get()`
+- **Example**: `$.if(In(dict, key)).then($ => { const value = $.let(Get(dict, key)); })`
+
+**Array Index Errors:**
+- **Cause**: Accessing array indices that don't exist
+- **Solution**: Check `Size()` before accessing indices
+- **Example**: `$.if(Greater(Size(array), index)).then(...)`
+
+**Null Reference Errors:**
+- **Cause**: Operations on null/undefined values
+- **Solution**: Use `$.ifNull()` for safe handling
+- **Example**: `$.ifNull(value).then($ => { /* null case */ }).else(($, nonNull) => { /* use nonNull */ })`
 
 ### Array Reference vs Copy - Critical Pattern
 

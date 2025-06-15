@@ -16,10 +16,10 @@ const path_statistics_basic_test = new UnitTestBuilder("path_statistics_basic")
         { id: "D", type: "output" }
       ],
       edges: [
-        { from: "A", to: "B" },
-        { from: "A", to: "C" },
-        { from: "B", to: "D" },
-        { from: "C", to: "D" }
+        { from: "A", to: "B", type: "flow" },
+        { from: "A", to: "C", type: "flow" },
+        { from: "B", to: "D", type: "transfer" },
+        { from: "C", to: "D", type: "transfer" }
       ]
     },
     {
@@ -45,8 +45,8 @@ const path_statistics_linear_test = new UnitTestBuilder("path_statistics_linear"
         { id: "C", type: "end" }
       ],
       edges: [
-        { from: "A", to: "B" },
-        { from: "B", to: "C" }
+        { from: "A", to: "B", type: "process" },
+        { from: "B", to: "C", type: "process" }
       ]
     },
     {
@@ -75,11 +75,11 @@ const path_statistics_branching_test = new UnitTestBuilder("path_statistics_bran
         { id: "leaf3", type: "terminal" }
       ],
       edges: [
-        { from: "root", to: "branch1" },
-        { from: "root", to: "branch2" },
-        { from: "branch1", to: "leaf1" },
-        { from: "branch1", to: "leaf2" },
-        { from: "branch2", to: "leaf3" }
+        { from: "root", to: "branch1", type: "split" },
+        { from: "root", to: "branch2", type: "split" },
+        { from: "branch1", to: "leaf1", type: "output" },
+        { from: "branch1", to: "leaf2", type: "output" },
+        { from: "branch2", to: "leaf3", type: "output" }
       ]
     },
     {

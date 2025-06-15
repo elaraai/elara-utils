@@ -7,10 +7,11 @@ export const GraphNode = StructType({
 });
 // export type GraphNode = typeof GraphNode;
 
-// Basic DAG edge (always required: from, to)
+// Basic DAG edge (always required: from, to, type)
 export const GraphEdge = StructType({
     from: StringType,
     to: StringType,
+    type: StringType
 });
 // export type GraphEdge = typeof GraphEdge;
 
@@ -188,6 +189,7 @@ export const GraphFlowConservationResult = StructType({
 export const GraphActiveEdge = StructType({
     from: StringType,
     to: StringType,
+    type: StringType,
     active: BooleanType
 });
 // export type GraphActiveEdge = typeof GraphActiveEdge;
@@ -241,6 +243,7 @@ export const GraphTypeAggregateNode = StructType({
 export const GraphTypeAggregateEdge = StructType({
     from_type: StringType,
     to_type: StringType,
+    edge_type: StringType,
     transition_count: IntegerType,
     transition_probability: FloatType
 });
@@ -327,11 +330,15 @@ export const GraphTypeStatistics = StructType({
     node_count: IntegerType,
     edge_count: IntegerType,
 
-    // Types
+    // Node types
     node_types: ArrayType(StringType),
     unique_node_types_count: IntegerType,
     source_node_types: ArrayType(StringType),
     target_node_types: ArrayType(StringType),
+
+    // Edge types
+    edge_types: ArrayType(StringType),
+    unique_edge_types_count: IntegerType,
 
     // Type aggregation details
     aggregate_nodes: ArrayType(GraphTypeAggregateNode),

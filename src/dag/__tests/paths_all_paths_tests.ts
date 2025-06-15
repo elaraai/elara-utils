@@ -16,8 +16,8 @@ const all_paths_linear_test = new UnitTestBuilder("all_paths_linear")
         { id: "C", type: "end" }
       ],
       edges: [
-        { from: "A", to: "B" },
-        { from: "B", to: "C" }
+        { from: "A", to: "B", type: "flow" },
+        { from: "B", to: "C", type: "process" }
       ],
       startId: "A",
       endId: "C"
@@ -40,10 +40,10 @@ const all_paths_multiple_test = new UnitTestBuilder("all_paths_multiple")
         { id: "D", type: "end" }
       ],
       edges: [
-        { from: "A", to: "B" },
-        { from: "A", to: "C" },
-        { from: "B", to: "D" },
-        { from: "C", to: "D" }
+        { from: "A", to: "B", type: "branch" },
+        { from: "A", to: "C", type: "branch" },
+        { from: "B", to: "D", type: "merge" },
+        { from: "C", to: "D", type: "merge" }
       ],
       startId: "A",
       endId: "D"
@@ -67,12 +67,12 @@ const all_paths_complex_test = new UnitTestBuilder("all_paths_complex")
         { id: "E", type: "end" }
       ],
       edges: [
-        { from: "A", to: "B" },
-        { from: "A", to: "C" },
-        { from: "B", to: "D" },
-        { from: "C", to: "D" },
-        { from: "B", to: "E" },
-        { from: "D", to: "E" }
+        { from: "A", to: "B", type: "branch" },
+        { from: "A", to: "C", type: "branch" },
+        { from: "B", to: "D", type: "process" },
+        { from: "C", to: "D", type: "process" },
+        { from: "B", to: "E", type: "direct" },
+        { from: "D", to: "E", type: "transfer" }
       ],
       startId: "A",
       endId: "E"
@@ -94,7 +94,7 @@ const all_paths_no_path_test = new UnitTestBuilder("all_paths_no_path")
         { id: "C", type: "end" }
       ],
       edges: [
-        { from: "A", to: "B" }
+        { from: "A", to: "B", type: "flow" }
       ],
       startId: "A",
       endId: "C"

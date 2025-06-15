@@ -13,8 +13,8 @@ const connected_components_single_test = new UnitTestBuilder("connected_componen
         { id: "C", type: "node" }
       ],
       edges: [
-        { from: "A", to: "B" },
-        { from: "B", to: "C" }
+        { from: "A", to: "B", type: "flow" },
+        { from: "B", to: "C", type: "process" }
       ]
     },
     {
@@ -46,8 +46,8 @@ const connected_components_multiple_test = new UnitTestBuilder("connected_compon
         { id: "E", type: "isolated" }
       ],
       edges: [
-        { from: "A", to: "B" },
-        { from: "C", to: "D" }
+        { from: "A", to: "B", type: "transfer" },
+        { from: "C", to: "D", type: "connection" }
         // E is isolated
       ]
     },
@@ -79,9 +79,9 @@ const connected_components_cycles_test = new UnitTestBuilder("connected_componen
         { id: "D", type: "separate" }
       ],
       edges: [
-        { from: "A", to: "B" },
-        { from: "B", to: "C" },
-        { from: "C", to: "A" }, // Cycle
+        { from: "A", to: "B", type: "transition" },
+        { from: "B", to: "C", type: "link" },
+        { from: "C", to: "A", type: "feedback" }, // Cycle
         // D is isolated
       ]
     },

@@ -16,8 +16,8 @@ const critical_path_basic_test = new UnitTestBuilder("critical_path_basic")
         { id: "C", type: "task", start_time: new Date("2024-01-01T00:05:00Z"), end_time: new Date("2024-01-01T00:09:00Z") }
       ],
       edges: [
-        { from: "A", to: "B" },
-        { from: "B", to: "C" }
+        { from: "A", to: "B", type: "flow" },
+        { from: "B", to: "C", type: "process" }
       ]
     },
     {
@@ -38,10 +38,10 @@ const critical_path_parallel_test = new UnitTestBuilder("critical_path_parallel"
         { id: "D", type: "end", start_time: new Date("2024-01-01T00:10:00Z"), end_time: new Date("2024-01-01T00:11:00Z") }
       ],
       edges: [
-        { from: "A", to: "B" },
-        { from: "A", to: "C" },
-        { from: "B", to: "D" },
-        { from: "C", to: "D" }
+        { from: "A", to: "B", type: "trigger" },
+        { from: "A", to: "C", type: "branch" },
+        { from: "B", to: "D", type: "flow" },
+        { from: "C", to: "D", type: "merge" }
       ]
     },
     {
@@ -64,12 +64,12 @@ const critical_path_complex_test = new UnitTestBuilder("critical_path_complex")
         { id: "F", type: "task", start_time: new Date("2024-01-01T00:13:00Z"), end_time: new Date("2024-01-01T00:14:00Z") }
       ],
       edges: [
-        { from: "A", to: "B" },
-        { from: "A", to: "C" },
-        { from: "B", to: "D" },
-        { from: "C", to: "E" },
-        { from: "D", to: "F" },
-        { from: "E", to: "F" }
+        { from: "A", to: "B", type: "process" },
+        { from: "A", to: "C", type: "transfer" },
+        { from: "B", to: "D", type: "flow" },
+        { from: "C", to: "E", type: "pipeline" },
+        { from: "D", to: "F", type: "channel" },
+        { from: "E", to: "F", type: "stream" }
       ]
     },
     {

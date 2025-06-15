@@ -8,9 +8,9 @@ const basic_adjacency_test = new UnitTestBuilder("basic_adjacency")
   .test(
     {
       edges: [
-        { from: "A", to: "B" },
-        { from: "A", to: "C" },
-        { from: "B", to: "D" }
+        { from: "A", to: "B", type: "flow" },
+        { from: "A", to: "C", type: "flow" },
+        { from: "B", to: "D", type: "flow" }
       ]
     },
     {
@@ -45,8 +45,8 @@ const self_loop_test = new UnitTestBuilder("self_loop_adjacency")
   .test(
     {
       edges: [
-        { from: "A", to: "A" },
-        { from: "A", to: "B" }
+        { from: "A", to: "A", type: "self" },
+        { from: "A", to: "B", type: "flow" }
       ]
     },
     {
@@ -66,9 +66,9 @@ const multiple_edges_test = new UnitTestBuilder("multiple_edges_adjacency")
   .test(
     {
       edges: [
-        { from: "A", to: "B" },
-        { from: "A", to: "B" }, // Duplicate edge (will be deduplicated)
-        { from: "B", to: "A" }
+        { from: "A", to: "B", type: "flow" },
+        { from: "A", to: "B", type: "flow" }, // Duplicate edge (will be deduplicated)
+        { from: "B", to: "A", type: "flow" }
       ]
     },
     {

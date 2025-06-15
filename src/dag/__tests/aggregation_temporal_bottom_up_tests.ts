@@ -13,8 +13,8 @@ const temporal_bottom_up_basic_test = new UnitTestBuilder("temporal_bottom_up_ba
         { id: "C", type: "leaf", start_time: new Date("2024-01-01T11:00:00Z"), end_time: new Date("2024-01-01T11:30:00Z") }
       ],
       edges: [
-        { from: "A", to: "B" },
-        { from: "A", to: "C" }
+        { from: "A", to: "B", type: "flow" },
+        { from: "A", to: "C", type: "flow" }
       ]
     },
     [
@@ -37,10 +37,10 @@ const temporal_bottom_up_multilevel_test = new UnitTestBuilder("temporal_bottom_
         { id: "E", type: "leaf", start_time: new Date("2024-01-01T13:00:00Z"), end_time: new Date("2024-01-01T13:25:00Z") }
       ],
       edges: [
-        { from: "A", to: "B" },
-        { from: "A", to: "C" },
-        { from: "B", to: "D" },
-        { from: "C", to: "E" }
+        { from: "A", to: "B", type: "process" },
+        { from: "A", to: "C", type: "process" },
+        { from: "B", to: "D", type: "transfer" },
+        { from: "C", to: "E", type: "transfer" }
       ]
     },
     [
@@ -79,8 +79,8 @@ const temporal_disconnected_test = new UnitTestBuilder("temporal_disconnected")
         { id: "D", type: "leaf2", start_time: new Date("2024-01-01T12:00:00Z"), end_time: new Date("2024-01-01T12:40:00Z") }
       ],
       edges: [
-        { from: "A", to: "B" },
-        { from: "C", to: "D" }
+        { from: "A", to: "B", type: "connection" },
+        { from: "C", to: "D", type: "connection" }
       ]
     },
     [

@@ -17,10 +17,10 @@ const topo_sort_basic_test = new UnitTestBuilder("topo_sort_basic")
         { id: "D", type: "end" }
       ],
       edges: [
-        { from: "A", to: "B" },
-        { from: "A", to: "C" },
-        { from: "B", to: "D" },
-        { from: "C", to: "D" }
+        { from: "A", to: "B", type: "flow" },
+        { from: "A", to: "C", type: "flow" },
+        { from: "B", to: "D", type: "process" },
+        { from: "C", to: "D", type: "process" }
       ]
     },
     [
@@ -42,8 +42,8 @@ const topo_sort_multiple_roots_test = new UnitTestBuilder("topo_sort_multiple_ro
         { id: "C", type: "merge" }
       ],
       edges: [
-        { from: "A", to: "C" },
-        { from: "B", to: "C" }
+        { from: "A", to: "C", type: "transfer" },
+        { from: "B", to: "C", type: "transfer" }
       ]
     },
     [

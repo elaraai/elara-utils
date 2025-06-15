@@ -15,8 +15,8 @@ const weighted_basic_test = new UnitTestBuilder("weighted_basic")
         { id: "C", value: 8.0, weight: 3.0 }
       ],
       edges: [
-        { from: "A", to: "B" },
-        { from: "A", to: "C" }
+        { from: "A", to: "B", type: "flow" },
+        { from: "A", to: "C", type: "process" }
       ]
     },
     [
@@ -51,7 +51,7 @@ const weighted_nulls_test = new UnitTestBuilder("weighted_nulls")
         { id: "B", value: 4.0, weight: 2.0 }
       ],
       edges: [
-        { from: "A", to: "B" }
+        { from: "A", to: "B", type: "transfer" }
       ]
     },
     [
