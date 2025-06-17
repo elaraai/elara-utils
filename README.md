@@ -79,8 +79,8 @@ Specialized analysis procedures for graph patterns and completeness:
 - `index.ts` - Exports all analysis procedures
 
 #### Flow Processing (`src/dag/flow/`)
-Network flow analysis and conservation validation:
-- `flow_conservation.ts` - Verifies conservation of flow through network, checking if flow is conserved at each node considering transmission losses
+Network flow analysis and volume tracking:
+- `volume_flow.ts` - Identifies, quantifies, and locates actual volume losses in industrial processing networks by analyzing flow patterns and calculating where material goes missing
 - `index.ts` - Exports all flow procedures
 
 #### Core Types and Tests
@@ -99,18 +99,18 @@ make all
 
 # Run test suites by module
 make dag_aggregation_tests           # All aggregation procedures
-make dag_flow_conservation_tests     # Flow conservation and connectivity  
-make dag_graph_traversal_tests       # BFS, DFS, topological sort, cycles
-make dag_path_analysis_tests         # Path finding and subgraph extraction
-make dag_shared_utils_tests          # Adjacency lists and validation
-make dag_time_aggregation_tests      # Temporal analysis procedures
+make dag_flow_tests                  # System loss detection
+make dag_traversal_tests             # BFS, DFS, topological sort, cycles
+make dag_paths_tests                 # Path finding and subgraph extraction
+make dag_core_tests                  # Adjacency lists and validation
+make dag_connectivity_tests          # Connected components and reachability
+make dag_analysis_tests              # Graph analysis and statistics
 
 # Run individual procedure tests
+make dag_flow_volume_flow_tests
 make dag_aggregation_bottom_up_tests
-make dag_flow_conservation_components_tests
-make dag_path_analysis_subgraphs_sources_tests
-make dag_graph_traversal_bfs_tests
-# ... and 20+ more individual test targets
+make dag_traversal_breadth_first_tests
+# ... and 25+ more individual test targets
 ```
 
 **Test Organization**: Each procedure has dedicated test files in `src/dag/__tests/` with comprehensive test cases covering edge cases, error conditions, and performance scenarios.
@@ -136,6 +136,9 @@ import {
 import { 
   graph_validate 
 } from "elara-utils/src/dag/core";
+import { 
+  graph_volume_flow
+} from "elara-utils/src/dag/flow";
 
 // Use the DAG utilities in your EDK procedures
 const myAnalysisProcedure = new Procedure("my_analysis")

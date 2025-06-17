@@ -139,8 +139,8 @@ dag_analysis_workflow_completeness_tests:
 
 # Flow tests
 .PHONY: dag_flow_tests
-dag_flow_tests: dag_flow_conservation_tests
+dag_flow_tests: dag_flow_volume_flow_tests
 
-.PHONY: dag_flow_conservation_tests
-dag_flow_conservation_tests:
-	edk template test -t ts --path src/dag/__tests/flow_conservation_tests.ts
+.PHONY: dag_flow_volume_flow_tests
+dag_flow_volume_flow_tests:
+	edk template test -t ts --path src/dag/__tests/volume_flow_tests.ts

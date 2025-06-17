@@ -17,14 +17,6 @@ export const GraphEdge = StructType({
 
 // Extended node types for specific algorithms
 
-// Traversal result node
-export const GraphTraversalNode = StructType({
-    id: StringType,
-    visited_order: IntegerType,
-    depth: IntegerType,
-    parent_id: Nullable(StringType)
-});
-// export type GraphTraversalNode = typeof GraphTraversalNode;
 
 export const GraphEnhancedTraversalNode = StructType({
     id: StringType,
@@ -74,29 +66,8 @@ export const GraphPathNode = StructType({
 });
 // export type GraphPathNode = typeof GraphPathNode;
 
-// Temporal node for duration-based algorithms
-export const GraphTemporalNode = StructType({
-    id: StringType,
-    type: StringType,
-    start_time: DateTimeType,
-    end_time: DateTimeType
-});
-// export type GraphTemporalNode = typeof GraphTemporalNode;
 
-// Critical path result node
-export const GraphCriticalPathNode = StructType({
-    id: StringType,
-    earliest_start: FloatType,
-    latest_finish: FloatType
-});
-// export type GraphCriticalPathNode = typeof GraphCriticalPathNode;
 
-// Critical path result
-export const GraphCriticalPathResult = StructType({
-    critical_path: ArrayType(StringType),
-    total_duration: FloatType
-});
-// export type GraphCriticalPathResult = typeof GraphCriticalPathResult;
 
 // Weighted edge for path analysis
 export const GraphWeightedEdge = StructType({
@@ -107,13 +78,6 @@ export const GraphWeightedEdge = StructType({
 });
 // export type GraphWeightedEdge = typeof GraphWeightedEdge;
 
-// Shortest path result node
-export const GraphShortestPathNode = StructType({
-    id: StringType,
-    distance: FloatType,
-    shortest_path_parent: Nullable(StringType)
-});
-// export type GraphShortestPathNode = typeof GraphShortestPathNode;
 
 // Shortest path result
 export const GraphShortestPathResult = StructType({
@@ -121,14 +85,12 @@ export const GraphShortestPathResult = StructType({
     total_cost: FloatType
 });
 // export type GraphShortestPathResult = typeof GraphShortestPathResult;
-
 // Value node for aggregation
 export const GraphValueNode = StructType({
     id: StringType,
     value: FloatType,
     weight: Nullable(FloatType)
 });
-// export type GraphValueNode = typeof GraphValueNode;
 
 // Aggregation result node
 export const GraphAggregationNode = StructType({
@@ -136,14 +98,12 @@ export const GraphAggregationNode = StructType({
     aggregated_value: FloatType,
     contributing_nodes: ArrayType(StringType)
 });
-// export type GraphAggregationNode = typeof GraphAggregationNode;
 
 // Group value node for aggregation
 export const GraphGroupValueNode = StructType({
     id: StringType,
     value: DictType(StringType, FloatType)
 });
-// export type GraphGroupValueNode = typeof GraphGroupValueNode;
 
 // Group value aggregation result node
 export const GraphGroupAggregationNode = StructType({
@@ -151,7 +111,6 @@ export const GraphGroupAggregationNode = StructType({
     aggregated_values: DictType(StringType, FloatType),
     contributing_nodes: ArrayType(StringType)
 });
-// export type GraphGroupAggregationNode = typeof GraphGroupAggregationNode;
 
 // Weighted aggregation result node
 export const GraphWeightedAggregationNode = StructType({
@@ -160,40 +119,48 @@ export const GraphWeightedAggregationNode = StructType({
     weighted_average: FloatType,
     total_weight: FloatType
 });
-// export type GraphWeightedAggregationNode = typeof GraphWeightedAggregationNode;
 
-// Flow node for conservation algorithms
-export const GraphFlowNode = StructType({
+// Temporal node for duration-based algorithms
+export const GraphTemporalNode = StructType({
     id: StringType,
-    value: FloatType,
-    capacity: FloatType
+    type: StringType,
+    start_time: DateTimeType,
+    end_time: DateTimeType
 });
-// export type GraphFlowNode = typeof GraphFlowNode;
 
-// Flow edge with loss
-export const GraphFlowEdge = StructType({
+// Critical path result
+export const GraphCriticalPathResult = StructType({
+    critical_path: ArrayType(StringType),
+    total_duration: FloatType
+});
+
+// System Loss Detection types - simple and focused on actual losses
+export const GraphVolumeNode = StructType({
+    id: StringType,
+    capacity: Nullable(FloatType)  // Optional capacity for physical vessels, null for process operations
+});
+
+export const GraphVolumeEdge = StructType({
     from: StringType,
     to: StringType,
-    weight: FloatType,
-    loss_percentage: FloatType
+    volume: FloatType  // Volume transferred
 });
-// export type GraphFlowEdge = typeof GraphFlowEdge;
 
-// Flow conservation result node
-export const GraphFlowConservationNode = StructType({
-    id: StringType,
-    input_total: FloatType,
-    output_total: FloatType,
-    loss_total: FloatType
+// System Loss Detection result types
+export const GraphNodeLoss = StructType({
+    node_id: StringType,
+    volume_in: FloatType,
+    volume_out: FloatType,
+    actual_loss: FloatType                      // Positive = loss, negative = gain
 });
-// export type GraphFlowConservationNode = typeof GraphFlowConservationNode;
 
-// Flow conservation result
-export const GraphFlowConservationResult = StructType({
-    is_conserved: BooleanType,
-    violations: ArrayType(StringType)
+export const GraphSystemLossResult = StructType({
+    total_input_volume: FloatType,              // Sum of all external inputs to system
+    total_output_volume: FloatType,             // Sum of all external outputs from system
+    total_system_loss: FloatType,               // Total volume lost (input - output)
+    node_losses: ArrayType(GraphNodeLoss)            // Per-node loss analysis
 });
-// export type GraphFlowConservationResult = typeof GraphFlowConservationResult;
+
 
 // Active edge for reachability
 export const GraphActiveEdge = StructType({
@@ -204,13 +171,6 @@ export const GraphActiveEdge = StructType({
 });
 // export type GraphActiveEdge = typeof GraphActiveEdge;
 
-// Reachability result node
-export const GraphReachabilityNode = StructType({
-    id: StringType,
-    reachable_from: ArrayType(StringType),
-    can_reach: ArrayType(StringType)
-});
-// export type GraphReachabilityNode = typeof GraphReachabilityNode;
 
 // Reachability result
 export const GraphReachabilityResult = StructType({
@@ -225,22 +185,7 @@ export const GraphReachabilityResult = StructType({
 });
 // export type GraphReachabilityResult = typeof GraphReachabilityResult;
 
-// Connected components result node
-export const GraphComponentNode = StructType({
-    id: StringType,
-    component_id: StringType
-});
-// export type GraphComponentNode = typeof GraphComponentNode;
 
-// Connected components result
-export const GraphComponentResult = StructType({
-    component_count: IntegerType,
-    component_sizes: ArrayType(StructType({
-        component_id: StringType,
-        size: IntegerType
-    }))
-});
-// export type GraphComponentResult = typeof GraphComponentResult;
 
 // Graph aggregation by type result nodes
 export const GraphTypeAggregateNode = StructType({
@@ -268,58 +213,8 @@ export const GraphTypeAggregateResult = StructType({
 
 
 
-export const GraphDuplicateNode = StructType({
-    id: StringType,
-    count: IntegerType,
-    instances: ArrayType(GraphNode)
-})
-
-export const GraphDuplicateEdge = StructType({
-    from: StringType,
-    from_type: Nullable(StringType),
-    to: StringType,
-    to_type: Nullable(StringType),
-    count: IntegerType
-})
-
-export const GraphDanglingEdge = StructType({
-    from: StringType,
-    from_type: Nullable(StringType),
-    to: StringType,
-    to_type: Nullable(StringType),
-})
 
 
-export const GraphValidateResult = StructType({
-    valid_nodes: ArrayType(GraphNode),
-    valid_edges: ArrayType(GraphEdge),
-    orphaned_nodes: ArrayType(GraphNode),
-    dangling_edges: ArrayType(GraphDanglingEdge),
-    duplicate_nodes: ArrayType(GraphDuplicateNode),
-    duplicate_edges: ArrayType(GraphDuplicateEdge),
-
-    // These require connected components analysis PER subgraph
-    largest_valid_component_size: IntegerType,        // Needs connected components
-    component_fragmentation: FloatType,               // Needs connected components
-
-    // Pattern matching across multiple subgraphs
-    missing_transition_patterns: ArrayType(StructType({
-        expected_from_type: StringType,     // e.g., "weightnote" 
-        expected_to_type: StringType,       // e.g., "crushing"
-        components_missing_pattern: IntegerType,
-        description: StringType             // "weightnote nodes not connecting to crushing"
-    })),     // Cross-subgraph analysis
-    bridge_node_analysis: ArrayType(StructType({
-        node_type: StringType,
-        acts_as_bridge_count: IntegerType,    // Nodes connecting components
-        criticality_score: FloatType          // How critical for connectivity
-    })),
-    workflow_completeness: StructType({
-        complete_workflows: IntegerType,       // weightnote→crushing→operations
-        incomplete_workflows: IntegerType,     // Missing steps
-        most_common_break_point: StringType   // Where workflows typically break
-    })
-});
 
 // Path subgraph for source/target extraction algorithms
 export const GraphPathSubgraph = StructType({

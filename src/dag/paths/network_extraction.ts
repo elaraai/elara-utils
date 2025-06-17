@@ -1,4 +1,4 @@
-import { Procedure } from "@elaraai/core";
+import { Add, Equal, Modulo, Procedure } from "@elaraai/core";
 import {
   ArrayType,
   Const,
@@ -10,6 +10,7 @@ import {
   NewSet,
   Not,
   Size,
+  StringJoin,
   StringType,
   Struct,
   StructType,
@@ -169,11 +170,14 @@ export const graph_network_extraction = new Procedure("graph_network_extraction"
   .import(graph_bfs)
   .body(($, { nodes, edges, source_node_ids, target_node_ids }, procs) => {
     
+    $.log(StringJoin`Network extraction started: ${Size(nodes)} nodes, ${Size(edges)} edges, ${Size(source_node_ids)} sources, ${Size(target_node_ids)} targets`);
+    
     const has_sources = $.let(Greater(Size(source_node_ids), Const(0n)));
     const has_targets = $.let(Greater(Size(target_node_ids), Const(0n)));
     
     // Early exit if no sources or targets specified
     $.if(And(Not(has_sources), Not(has_targets))).then($ => {
+      $.log(Const("No sources or targets specified - returning empty result"));
       $.return(Struct({
         subgraphs: NewArray(GraphNetworkSubgraph)
       }));
@@ -222,6 +226,8 @@ export const graph_network_extraction = new Procedure("graph_network_extraction"
       $.insertOrUpdate(starting_node_ids, target_id);
     });
     
+    $.log(StringJoin`Pre-processing complete: ${Size(starting_node_ids)} valid starting points identified`);
+    
     // Find complete connected networks containing starting points
     const processed_nodes = $.let(NewSet(StringType));
     const result_subgraphs = $.let(NewArray(GraphNetworkSubgraph));
@@ -229,6 +235,8 @@ export const graph_network_extraction = new Procedure("graph_network_extraction"
     $.forSet(starting_node_ids, ($, starting_node_id) => {
       // OPTIMIZATION 3: Simplified processed check (removed redundant reachability BFS)
       $.if(Not(In(processed_nodes, starting_node_id))).then($ => {
+        
+        $.log(StringJoin`Processing starting node: ${starting_node_id}`);
         
         // Find complete connected component using bidirectional BFS
         const network_node_ids = $.let(NewSet(StringType));
@@ -244,6 +252,8 @@ export const graph_network_extraction = new Procedure("graph_network_extraction"
           $.insertOrUpdate(network_node_ids, node_id);
         });
         
+        $.log(StringJoin`Forward BFS from ${starting_node_id}: ${Size(forward_reachable)} nodes reachable`);
+        
         // OPTIMIZATION 4: Use pre-built reversed edges
         const backward_reachable = $.let(procs.graph_bfs(Struct({
           nodes: nodes,
@@ -255,10 +265,24 @@ export const graph_network_extraction = new Procedure("graph_network_extraction"
           $.insertOrUpdate(network_node_ids, node_id);
         });
         
+        $.log(StringJoin`Backward BFS from ${starting_node_id}: ${Size(backward_reachable)} nodes reachable`);
+        $.log(StringJoin`Combined bidirectional network: ${Size(network_node_ids)} nodes`)
+        
         // Forward BFS from all network nodes to capture sibling endpoints
         // OPTIMIZATION 5: Use forSet directly instead of converting to array
+        $.log(StringJoin`Starting sibling capture: running BFS from each of ${Size(network_node_ids)} network nodes`);
+        
         const additional_nodes = $.let(NewSet(StringType));
+        const processed_count = $.let(Const(0n));
+        
         $.forSet(network_node_ids, ($, node_id) => {
+          $.assign(processed_count, Add(processed_count, Const(1n)));
+          
+          // Log progress every 5 nodes to avoid spam
+          $.if(Equal(Modulo(processed_count, Const(5n)), Const(0n))).then($ => {
+            $.log(StringJoin`Sibling BFS progress: ${processed_count}/${Size(network_node_ids)} nodes processed, found ${Size(additional_nodes)} additional nodes`);
+          });
+          
           const forward_reachable = $.let(procs.graph_bfs(Struct({
             nodes: nodes,
             edges: edges,
@@ -276,6 +300,8 @@ export const graph_network_extraction = new Procedure("graph_network_extraction"
         $.forSet(additional_nodes, ($, node_id) => {
           $.insertOrUpdate(network_node_ids, node_id);
         });
+        
+        $.log(StringJoin`After sibling capture: ${Size(network_node_ids)} total network nodes`);
         
         // Iteratively include external sources that feed into the network
         // Track newly added nodes to only check relevant edges each iteration
@@ -307,6 +333,8 @@ export const graph_network_extraction = new Procedure("graph_network_extraction"
           // Update newly_added_nodes for next iteration
           $.assign(newly_added_nodes, next_newly_added);
         });
+        
+        $.log(StringJoin`Final network size after external source inclusion: ${Size(network_node_ids)} nodes`);
         
         // Mark all nodes in this network as processed IMMEDIATELY
         // This prevents duplicate processing when multiple starting points are in the same network
@@ -361,8 +389,12 @@ export const graph_network_extraction = new Procedure("graph_network_extraction"
         }));
         
         $.pushLast(result_subgraphs, subgraph);
+        
+        $.log(StringJoin`Subgraph created: ${Size(filtered_nodes)} nodes, ${Size(filtered_edges)} edges`);
       });
     });
+    
+    $.log(StringJoin`Network extraction complete: ${Size(result_subgraphs)} subgraphs generated`);
     
     $.return(Struct({
       subgraphs: result_subgraphs
