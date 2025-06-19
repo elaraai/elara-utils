@@ -1,4 +1,4 @@
-import { Procedure } from "@elaraai/core";
+import { NewSet, Procedure, ToArray } from "@elaraai/core";
 import {
   Add,
   And,
@@ -12,7 +12,6 @@ import {
   NewDict,
   Not,
   Size,
-  StringJoin,
   Struct,
   Subtract,
 } from "@elaraai/core";
@@ -112,56 +111,33 @@ export const graph_cycle_detection = new Procedure("graph_cycle_detection")
   .output(GraphCycleResult)
   .import(graph_build_adjacency_lists)
   .body(($, { nodes, edges, find_all_cycles }, procs) => {
-    const nodeCount = $.let(Size(nodes));
-    const edgeCount = $.let(Size(edges));
-    
+
     // Log start of cycle detection for large graphs
-    $.log(StringJoin`Starting cycle detection on graph with ${nodeCount} nodes and ${edgeCount} edges`);
     
     // Build adjacency lists using shared utility
-    $.log(Const("Building adjacency lists..."));
     const adjacencyData = $.let(procs.graph_build_adjacency_lists(Struct({ edges })));
     const adjacencyList = $.let(GetField(adjacencyData, "adjacency_list"));
-    $.log(Const("Adjacency lists built successfully"));
     
     // DFS-based cycle detection with colors: white(0), gray(1), black(2)
     const color = $.let(NewDict(StringType, IntegerType));
-    const cycleNodes = $.let(NewArray(StringType));
+    const cycleNodes = $.let(NewSet(StringType));
     const hasCycle = $.let(Const(false));
     
     // Initialize all nodes as white
-    $.log(Const("Initializing node colors..."));
     $.forArray(nodes, ($, node) => {
       const nodeId = $.let(GetField(node, "id"));
       $.insert(color, nodeId, Const(0n)); // white
     });
-    $.log(Const("Node color initialization complete"));
     
     // DFS from each unvisited node - with early termination and performance optimizations
-    $.log(Const("Starting DFS traversal from unvisited nodes..."));
     const processedNodes = $.let(Const(0n));
-    const totalNodes = $.let(Size(nodes));
     
-    $.forArray(nodes, ($, node, nodeIndex, outerLabel) => {
+    $.forArray(nodes, ($, node, _nodeIndex, outerLabel) => {
       // Early exit if cycle already found and not finding all cycles
       $.if(And(hasCycle, Not(find_all_cycles))).then($ => {
-        $.log(StringJoin`Cycle found! Terminating early after processing ${processedNodes} of ${totalNodes} nodes`);
         $.break(outerLabel);
       });
       
-      // Progress logging for large graphs (at key milestones)
-      $.if(Equal(nodeIndex, Const(50000n))).then($ => {
-        $.log(StringJoin`Progress: processed 50,000 of ${totalNodes} nodes for DFS starts`);
-      });
-      $.if(Equal(nodeIndex, Const(100000n))).then($ => {
-        $.log(StringJoin`Progress: processed 100,000 of ${totalNodes} nodes for DFS starts`);
-      });
-      $.if(Equal(nodeIndex, Const(500000n))).then($ => {
-        $.log(StringJoin`Progress: processed 500,000 of ${totalNodes} nodes for DFS starts`);
-      });
-      $.if(Equal(nodeIndex, Const(1000000n))).then($ => {
-        $.log(StringJoin`Progress: processed 1,000,000 of ${totalNodes} nodes for DFS starts`);
-      });
       
       const nodeId = $.let(GetField(node, "id"));
       const nodeColor = $.let(Get(color, nodeId));
@@ -182,16 +158,6 @@ export const graph_cycle_detection = new Procedure("graph_cycle_detection")
           
           $.assign(dfsSteps, Add(dfsSteps, Const(1n)));
           
-          // Progress logging for deep DFS (at key milestones)
-          $.if(Equal(dfsSteps, Const(10000n))).then($ => {
-            $.log(StringJoin`DFS from node ${nodeId}: 10,000 steps, stack size: ${Size(stack)}`);
-          });
-          $.if(Equal(dfsSteps, Const(50000n))).then($ => {
-            $.log(StringJoin`DFS from node ${nodeId}: 50,000 steps, stack size: ${Size(stack)}`);
-          });
-          $.if(Equal(dfsSteps, Const(100000n))).then($ => {
-            $.log(StringJoin`DFS from node ${nodeId}: 100,000 steps, stack size: ${Size(stack)}`);
-          });
           
           const current = $.let(Get(stack, Subtract(Size(stack), Const(1n))));
           const currentColor = $.let(Get(color, current)); // Single color lookup per iteration
@@ -210,8 +176,8 @@ export const graph_cycle_detection = new Procedure("graph_cycle_detection")
                   
                   $.if(Equal(neighborColor, Const(1n))).then($ => { // gray = back edge = cycle
                     $.assign(hasCycle, Const(true));
-                    $.pushLast(cycleNodes, neighbor);
-                    $.pushLast(cycleNodes, current);
+                    $.insertOrUpdate(cycleNodes, neighbor);
+                    $.insertOrUpdate(cycleNodes, current);
                     
                     // Only break early if not finding all cycles
                     $.if(Not(find_all_cycles)).then($ => {
@@ -235,15 +201,8 @@ export const graph_cycle_detection = new Procedure("graph_cycle_detection")
       });
     });
     
-    // Final logging
-    $.if(hasCycle).then($ => {
-      $.log(StringJoin`Cycle detection completed: CYCLE FOUND with ${Size(cycleNodes)} cycle nodes`);
-    }).else($ => {
-      $.log(StringJoin`Cycle detection completed: NO CYCLES FOUND after processing ${totalNodes} nodes`);
-    });
-    
     $.return(Struct({
       has_cycle: hasCycle,
-      cycle_nodes: cycleNodes
+      cycle_nodes: ToArray(cycleNodes)
     }));
   });

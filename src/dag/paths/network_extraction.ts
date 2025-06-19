@@ -10,7 +10,6 @@ import {
   NewSet,
   Not,
   Size,
-  StringJoin,
   StringType,
   Struct,
   StructType,
@@ -241,8 +240,6 @@ export const graph_network_extraction = new Procedure("graph_network_extraction"
           source_node_id: starting_node_id
         })));
         
-        $.log(StringJoin`Forward BFS from ${starting_node_id}: found ${Size(forward_reachable)} nodes`);
-        
         $.forArray(forward_reachable, ($, node_id) => {
           $.insertOrUpdate(network_node_ids, node_id);
         });
@@ -254,13 +251,9 @@ export const graph_network_extraction = new Procedure("graph_network_extraction"
           source_node_id: starting_node_id
         })));
         
-        $.log(StringJoin`Backward BFS from ${starting_node_id}: found ${Size(backward_reachable)} nodes`);
-        
         $.forArray(backward_reachable, ($, node_id) => {
           $.insertOrUpdate(network_node_ids, node_id);
         });
-        
-        $.log(StringJoin`After bidirectional BFS: network has ${Size(network_node_ids)} nodes`);
         
         // Forward BFS from all network nodes to capture sibling endpoints
         // OPTIMIZATION 5: Use forSet directly instead of converting to array
@@ -272,8 +265,6 @@ export const graph_network_extraction = new Procedure("graph_network_extraction"
             source_node_id: node_id
           })));
           
-          $.log(StringJoin`Sibling endpoint BFS from ${node_id}: found ${Size(forward_reachable)} nodes`);
-          
           $.forArray(forward_reachable, ($, reachable_id) => {
             $.if(Not(In(network_node_ids, reachable_id))).then($ => {
               $.insertOrUpdate(additional_nodes, reachable_id);
@@ -282,12 +273,9 @@ export const graph_network_extraction = new Procedure("graph_network_extraction"
         });
         
         // Add all additional nodes to the main network
-        $.log(StringJoin`Adding ${Size(additional_nodes)} additional sibling endpoint nodes`);
-        $.forSet(additional_nodes, ($, node_id) => {
+       $.forSet(additional_nodes, ($, node_id) => {
           $.insertOrUpdate(network_node_ids, node_id);
         });
-        
-        $.log(StringJoin`After sibling endpoints: network has ${Size(network_node_ids)} nodes`);
         
         // Iteratively include external sources that feed into the network
         // Track newly added nodes to only check relevant edges each iteration
@@ -302,8 +290,7 @@ export const graph_network_extraction = new Procedure("graph_network_extraction"
         const iteration_count = $.let(Const(0n));
         $.while(Greater(Size(newly_added_nodes), Const(0n)), $ => {
           $.assign(iteration_count, Size(network_node_ids));
-          $.log(StringJoin`External source iteration: checking ${Size(newly_added_nodes)} newly added nodes`);
-          
+           
           const next_newly_added = $.let(NewSet(StringType));
           
           // Only check edges where 'to' node is newly added (optimization)
@@ -319,8 +306,6 @@ export const graph_network_extraction = new Procedure("graph_network_extraction"
               });
             });
           });
-          
-          $.log(StringJoin`External source iteration: found ${Size(next_newly_added)} new external sources, network now has ${Size(network_node_ids)} nodes`);
           
           // Update newly_added_nodes for next iteration
           $.assign(newly_added_nodes, next_newly_added);

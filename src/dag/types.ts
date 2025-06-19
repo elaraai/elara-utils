@@ -1,4 +1,4 @@
-import { ArrayType, BooleanType, DateTimeType, DictType, FloatType, IntegerType, Nullable, StringType, StructType } from "@elaraai/core";
+import { ArrayType, BooleanType, DateTimeType, DictType, FloatType, IntegerType, Nullable, SetType, StringType, StructType } from "@elaraai/core";
 
 // Basic DAG node (always required: id)
 export const GraphNode = StructType({
@@ -220,14 +220,12 @@ export const GraphTypeAggregateResult = StructType({
 export const GraphPathSubgraph = StructType({
     nodes: ArrayType(GraphNode),
     edges: ArrayType(GraphEdge),
-    source_nodes: ArrayType(GraphNode),
-    target_nodes: ArrayType(GraphNode)
+    source_nodes: ArrayType(StringType),
+    target_nodes: ArrayType(StringType),
+    node_types: SetType(StringType),
+    edge_types: SetType(StringType)
 });
 
-// Path subgraphs result
-export const GraphPathSubgraphsResult = StructType({
-    subgraphs: ArrayType(GraphPathSubgraph)
-});
 
 // Graph overview statistics result
 export const GraphTypeStatistics = StructType({

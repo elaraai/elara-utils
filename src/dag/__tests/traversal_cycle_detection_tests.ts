@@ -98,7 +98,7 @@ const cycle_detection_self_loop = new UnitTestBuilder("cycle_detection_self_loop
     },
     {
       has_cycle: true,
-      cycle_nodes: ["A", "A"]
+      cycle_nodes: ["A"]
     }
   );
 
@@ -307,7 +307,7 @@ const cycle_detection_multiple_cycles_all = new UnitTestBuilder("cycle_detection
     },
     {
       has_cycle: true,
-      cycle_nodes: ["B", "E", "A", "C"] // Multiple cycles detected (DFS order dependent)
+      cycle_nodes: ["A", "B", "C", "E"] // Multiple cycles detected (DFS order dependent)
     }
   );
 
