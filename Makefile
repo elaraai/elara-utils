@@ -47,7 +47,7 @@ dag_traversal_topological_sort_tests:
 
 # Connectivity tests
 .PHONY: dag_connectivity_tests
-dag_connectivity_tests: dag_connectivity_connected_components_tests dag_connectivity_dynamic_reachability_tests dag_connectivity_bridge_analysis_tests
+dag_connectivity_tests: dag_connectivity_connected_components_tests dag_connectivity_dynamic_reachability_tests dag_connectivity_articulation_points_tests dag_connectivity_bridge_detection_tests dag_connectivity_strongly_connected_components_tests
 
 .PHONY: dag_connectivity_connected_components_tests
 dag_connectivity_connected_components_tests:
@@ -57,13 +57,21 @@ dag_connectivity_connected_components_tests:
 dag_connectivity_dynamic_reachability_tests:
 	edk template test -t ts --path src/dag/__tests/connectivity_dynamic_reachability_tests.ts
 
-.PHONY: dag_connectivity_bridge_analysis_tests
-dag_connectivity_bridge_analysis_tests:
-	edk template test -t ts --path src/dag/__tests/connectivity_bridge_analysis_tests.ts
+.PHONY: dag_connectivity_articulation_points_tests
+dag_connectivity_articulation_points_tests:
+	edk template test -t ts --path src/dag/__tests/articulation_points_tests.ts
+
+.PHONY: dag_connectivity_bridge_detection_tests
+dag_connectivity_bridge_detection_tests:
+	edk template test -t ts --path src/dag/__tests/bridge_detection_tests.ts
+
+.PHONY: dag_connectivity_strongly_connected_components_tests
+dag_connectivity_strongly_connected_components_tests:
+	edk template test -t ts --path src/dag/__tests/strongly_connected_components_tests.ts
 
 # Paths tests
 .PHONY: dag_paths_tests
-dag_paths_tests: dag_paths_all_paths_tests dag_paths_critical_path_tests dag_paths_path_membership_tests dag_paths_shortest_path_tests dag_paths_subgraph_extraction_tests
+dag_paths_tests: dag_paths_all_paths_tests dag_paths_critical_path_tests dag_paths_network_extraction_tests dag_paths_path_membership_tests dag_paths_shortest_path_tests dag_paths_subgraph_extraction_tests
 
 .PHONY: dag_paths_all_paths_tests
 dag_paths_all_paths_tests:
@@ -72,6 +80,10 @@ dag_paths_all_paths_tests:
 .PHONY: dag_paths_critical_path_tests
 dag_paths_critical_path_tests:
 	edk template test -t ts --path src/dag/__tests/paths_critical_path_tests.ts
+
+.PHONY: dag_paths_network_extraction_tests
+dag_paths_network_extraction_tests:
+	edk template test -t ts --path src/dag/__tests/paths_network_extraction_tests.ts
 
 .PHONY: dag_paths_path_membership_tests
 dag_paths_path_membership_tests:

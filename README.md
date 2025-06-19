@@ -43,7 +43,8 @@ Core graph traversal algorithms and analysis:
 Network connectivity and component analysis:
 - `connected_components.ts` - Identifies connected components in an undirected graph representation using optimized O(V + E) algorithm with unique component IDs
 - `dynamic_reachability.ts` - Analyzes graph reachability considering only active edges, computing ancestors and descendants via active connections only
-- `bridge_analysis.ts` - Identifies critical nodes whose removal would increase the number of connected components
+- `articulation_points.ts` - Identifies critical vertices whose removal would increase the number of connected components using Tarjan's algorithm
+- `bridge_detection.ts` - Identifies critical edges whose removal would increase the number of connected components using Tarjan's algorithm
 - `index.ts` - Exports all connectivity procedures
 
 #### Path Analysis (`src/dag/paths/`)
