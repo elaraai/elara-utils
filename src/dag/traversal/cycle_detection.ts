@@ -1,6 +1,7 @@
 import { Procedure } from "@elaraai/core";
 import {
   Add,
+  And,
   Const,
   Equal,
   Get,
@@ -9,72 +10,108 @@ import {
   In,
   NewArray,
   NewDict,
+  Not,
   Size,
   StringJoin,
   Struct,
   Subtract,
 } from "@elaraai/core";
 
-import { ArrayType, IntegerType, StringType } from "@elaraai/core";
+import { ArrayType, BooleanType, IntegerType, StringType } from "@elaraai/core";
 
 import { graph_build_adjacency_lists } from "../core/adjacency_lists";
 import { GraphNode, GraphEdge, GraphCycleResult } from "../types";
 
 /**
- * Cycle detection - detects if the graph contains any cycles and identifies the nodes involved
+ * Graph Cycle Detection - Iterative DFS algorithm for detecting cycles in directed graphs
  * 
+ * **Purpose**: Detects if the graph contains any cycles and identifies the nodes involved in cycles.
  * Uses DFS with state tracking to detect back edges that indicate cycles. Essential for validating 
- * that dependency graphs are actually DAGs (Directed Acyclic Graphs). Returns both a boolean flag 
- * and the specific nodes involved in detected cycles.
+ * that dependency graphs are actually DAGs (Directed Acyclic Graphs). Supports both early termination
+ * for fast cycle detection and full traversal for comprehensive cycle node identification.
  * 
- * **Example - Simple Cycle:**
+ * **Key Assumptions**:
+ * - Input graph is treated as directed (edges maintain their direction)
+ * - Graph may contain multiple disconnected components
+ * - Self-loops are valid cycles and will be detected
+ * - Parallel edges are treated as separate directed connections
+ * - Node IDs are unique strings within the graph
+ * 
+ * **Time Complexity**: O(V + E) where:
+ * - V = number of vertices in the graph
+ * - E = number of edges in the graph
+ * Note: Early termination can significantly improve performance when find_all_cycles = false
+ * 
+ * **Space Complexity**: O(V + E) for:
+ * - Adjacency list storage: O(V + E)
+ * - DFS state tracking (colors): O(V)
+ * - DFS stack and cycle node storage: O(V)
+ * 
+ * **Input Parameters**:
+ * @param nodes - Array of GraphNode objects containing node definitions
+ * @param edges - Array of GraphEdge objects representing directed connections
+ * @param find_all_cycles - If true, continues searching after finding first cycle to detect all cycle nodes
+ * 
+ * **Output Structure**:
+ * @returns GraphCycleResult containing:
+ * - has_cycle: Boolean indicating if any cycles were found
+ * - cycle_nodes: Array of node IDs involved in detected cycles (order depends on DFS traversal)
+ * 
+ * **Behavior Examples**:
  * ```
- * Input Graph:           Cycle Detection:
- *     A ──→ B             1. Start DFS from A
- *     ↑     ↓             2. Visit A → B → C
- *     └──── C             3. C → A creates back edge!
+ * Example 1: Simple Cycle (Early Termination)
+ * Graph: A → B → C → A
+ * Input: find_all_cycles = false
+ * Output: {has_cycle: true, cycle_nodes: ["A", "C"]}
+ *   Stops at first back edge detected
  * 
- * Result: {has_cycle: true, cycle_nodes: ["A", "C"]}
+ * Example 2: Multiple Cycles (Full Detection)
+ * Graph: A → B → A, C → D → C
+ * Input: find_all_cycles = true  
+ * Output: {has_cycle: true, cycle_nodes: ["A", "B", "C", "D"]}
+ *   Finds all nodes involved in any cycle
+ * 
+ * Example 3: Self Loop
+ * Graph: A ↺
+ * Input: find_all_cycles = false
+ * Output: {has_cycle: true, cycle_nodes: ["A", "A"]}
+ *   Self-loop detected immediately
+ * 
+ * Example 4: No Cycles (DAG)
+ * Graph: A → B → C
+ * Input: find_all_cycles = false
+ * Output: {has_cycle: false, cycle_nodes: []}
+ *   No back edges found during DFS
  * ```
  * 
- * **Example - Self Loop:**
- * ```
- * Input Graph:           Cycle Detection:
- *     A ↺                 1. A has edge to itself
- *                         2. Immediate cycle detected
+ * **Edge Cases Handled**:
+ * - Empty graph: Returns {has_cycle: false, cycle_nodes: []}
+ * - Single node: Returns {has_cycle: false, cycle_nodes: []} unless self-loop exists
+ * - Disconnected components: Processes each component independently  
+ * - Dangling edges: Edges referencing non-existent nodes are ignored
+ * - Complex nested cycles: Correctly identifies all cycle participants when find_all_cycles = true
  * 
- * Result: {has_cycle: true, cycle_nodes: ["A", "A"]}
- * ```
- * 
- * **Example - No Cycle (DAG):**
- * ```
- * Input Graph:           Cycle Detection:
- *     A ──→ B             1. DFS visits all nodes
- *     └──→ C              2. No back edges found
- * 
- * Result: {has_cycle: false, cycle_nodes: []}
- * ```
- * 
- * **Use Cases:**
+ * **Use Cases**:
  * - Dependency validation: "Can these tasks be completed without circular dependencies?"
  * - Deadlock detection: "Will this resource allocation create deadlocks?"
  * - Topological sort validation: "Is topological ordering possible for this graph?"
+ * - Workflow analysis: "Does this process have circular dependencies?"
+ * - Import/module dependency checking: "Are there circular imports in the codebase?"
  * 
- * **Algorithm:** Uses DFS with three node states (unvisited, visiting, visited) to detect back edges.
- * A back edge occurs when we encounter a node that's currently being visited in our DFS path.
- * 
- * **Complexity:** O(V + E) where V is the number of vertices and E is the number of edges.
- * 
- * @param nodes Array of graph nodes to check for cycles
- * @param edges Array of directed edges that might form cycles (from → to)
- * @returns Cycle result with has_cycle boolean and array of nodes involved in any detected cycle
+ * **Algorithm Details**:
+ * Uses iterative DFS with three-color node marking:
+ * 1. White (0): Unvisited node
+ * 2. Gray (1): Currently being processed (on DFS stack)
+ * 3. Black (2): Completely processed
+ * A back edge occurs when we encounter a gray node, indicating a cycle.
  */
 export const graph_cycle_detection = new Procedure("graph_cycle_detection")
   .input("nodes", ArrayType(GraphNode))
   .input("edges", ArrayType(GraphEdge))
+  .input("find_all_cycles", BooleanType)
   .output(GraphCycleResult)
   .import(graph_build_adjacency_lists)
-  .body(($, { nodes, edges }, procs) => {
+  .body(($, { nodes, edges, find_all_cycles }, procs) => {
     const nodeCount = $.let(Size(nodes));
     const edgeCount = $.let(Size(edges));
     
@@ -106,8 +143,8 @@ export const graph_cycle_detection = new Procedure("graph_cycle_detection")
     const totalNodes = $.let(Size(nodes));
     
     $.forArray(nodes, ($, node, nodeIndex, outerLabel) => {
-      // Early exit if cycle already found
-      $.if(hasCycle).then($ => {
+      // Early exit if cycle already found and not finding all cycles
+      $.if(And(hasCycle, Not(find_all_cycles))).then($ => {
         $.log(StringJoin`Cycle found! Terminating early after processing ${processedNodes} of ${totalNodes} nodes`);
         $.break(outerLabel);
       });
@@ -138,8 +175,8 @@ export const graph_cycle_detection = new Procedure("graph_cycle_detection")
         const dfsSteps = $.let(Const(0n));
         
         $.while(Greater(Size(stack), Const(0n)), ($, whileLabel) => {
-          // Early exit if cycle found during DFS
-          $.if(hasCycle).then($ => {
+          // Early exit if cycle found during DFS and not finding all cycles
+          $.if(And(hasCycle, Not(find_all_cycles))).then($ => {
             $.break(whileLabel);
           });
           
@@ -175,7 +212,11 @@ export const graph_cycle_detection = new Procedure("graph_cycle_detection")
                     $.assign(hasCycle, Const(true));
                     $.pushLast(cycleNodes, neighbor);
                     $.pushLast(cycleNodes, current);
-                    $.break(neighborLabel); // Break out of neighbor processing immediately
+                    
+                    // Only break early if not finding all cycles
+                    $.if(Not(find_all_cycles)).then($ => {
+                      $.break(neighborLabel); // Break out of neighbor processing immediately
+                    });
                   }).elseIf(Equal(neighborColor, Const(0n))).then($ => { // white
                     $.pushLast(stack, neighbor);
                   });
