@@ -47,7 +47,7 @@ dag_traversal_topological_sort_tests:
 
 # Connectivity tests
 .PHONY: dag_connectivity_tests
-dag_connectivity_tests: dag_connectivity_connected_components_tests dag_connectivity_dynamic_reachability_tests dag_connectivity_articulation_points_tests dag_connectivity_bridge_detection_tests dag_connectivity_strongly_connected_components_tests
+dag_connectivity_tests: dag_connectivity_connected_components_tests dag_connectivity_dynamic_reachability_tests dag_connectivity_articulation_points_tests dag_connectivity_bridge_detection_tests dag_connectivity_strongly_connected_components_tests dag_connectivity_strong_subgraphs_tests
 
 .PHONY: dag_connectivity_connected_components_tests
 dag_connectivity_connected_components_tests:
@@ -68,6 +68,10 @@ dag_connectivity_bridge_detection_tests:
 .PHONY: dag_connectivity_strongly_connected_components_tests
 dag_connectivity_strongly_connected_components_tests:
 	edk template test -t ts --path src/dag/__tests/strongly_connected_components_tests.ts
+
+.PHONY: dag_connectivity_strong_subgraphs_tests
+dag_connectivity_strong_subgraphs_tests:
+	edk template test -t ts --path src/dag/__tests/connectivity_strong_subgraphs_tests.ts
 
 # Paths tests
 .PHONY: dag_paths_tests
